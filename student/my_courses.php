@@ -24,7 +24,8 @@ if (mysqli_num_rows($result) > 0) {
         echo "<div style='border:1px solid #ccc; padding:10px; margin:10px 0;'>";
         echo "<h3>" . $course['title'] . "</h3>";
         echo "<p>" . $course['description'] . "</p>";
-        echo "<strong>Price: $" . $course['price'] . "</strong>";
+        echo "<strong>Price: $" . $course['price'] . "</strong><br><br>";
+	echo "<a href='lessons.php?course_id=" . $course['id'] . "'>View Lessons</a>";
         echo "</div>";
     }
 
