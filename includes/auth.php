@@ -12,11 +12,17 @@ function requireLogin() {
 }
 
 /**
- * Require specific role
+ * Require role (admin is superuser)
  */
 function requireRole($role) {
     requireLogin();
 
+    // Admin can access everything
+    if ($_SESSION['role'] === 'admin') {
+        return;
+    }
+
+    // Other roles must match exactly
     if ($_SESSION['role'] !== $role) {
         echo "Access denied";
         exit;
