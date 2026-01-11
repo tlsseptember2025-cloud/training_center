@@ -11,7 +11,7 @@ if (isset($_POST['login'])) {
     $user = mysqli_fetch_assoc($query);
 
     if ($user && password_verify($password, $user['password'])) {
-
+	// testing comments
         $_SESSION['user_id'] = $user['id'];
         $_SESSION['role'] = $user['role'];
 
