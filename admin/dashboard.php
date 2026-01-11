@@ -32,4 +32,17 @@ requireRole('admin');
     <br>
 
     <li>
-        <a href="
+        <a href="../student/courses.php">Preview Student Course View</a>
+        <br>
+        <small>See how students see courses</small>
+    </li>
+    <br>
+
+    <li>
+        <a href="../logout.php">Logout</a>
+    </li>
+</ul>
+
+</body>
+</html>
+
