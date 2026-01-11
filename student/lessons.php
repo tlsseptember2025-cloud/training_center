@@ -20,7 +20,14 @@ if (mysqli_num_rows($check) == 0) {
 
 $lessons = mysqli_query(
     $conn,
-    "SELECT * FROM lessons WHERE course_id = $course_id"
+    "
+    SELECT lessons.*, lesson_progress.id AS completed
+    FROM lessons
+    LEFT JOIN lesson_progress
+      ON lessons.id = lesson_progress.lesson_id
+      AND lesson_progress.student_id = $student_id
+    WHERE lessons.course_id = $course_id
+    "
 );
 ?>
 
@@ -32,7 +39,17 @@ if (mysqli_num_rows($lessons) > 0) {
     while ($lesson = mysqli_fetch_assoc($lessons)) {
         echo "<div style='border:1px solid #ccc; padding:10px; margin:10px 0;'>";
         echo "<h3>" . $lesson['title'] . "</h3>";
-        echo "<a href='../uploads/lessons/" . $lesson['file'] . "' target='_blank'>Download / View</a>";
+
+        echo "<a href='../uploads/lessons/" . $lesson['file'] . "' target='_blank'>Download / View</a><br><br>";
+
+        if ($lesson['completed']) {
+            echo "<strong style='color:green;'>Completed</strong>";
+        } else {
+            echo "<a href='complete_lesson.php?lesson_id={$lesson['id']}&course_id=$course_id'>
+                    Mark as Completed
+                  </a>";
+        }
+
         echo "</div>";
     }
 
@@ -40,3 +57,4 @@ if (mysqli_num_rows($lessons) > 0) {
     echo "No lessons available for this course yet.";
 }
 ?>
+
