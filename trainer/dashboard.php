@@ -1,8 +1,5 @@
 <?php
-session_start();
-
-if (!isset($_SESSION['user_id'])) {
-    header("Location: ../login.php");
-}
+include "../includes/auth.php";
+requireRole('trainer');
 
 echo "<h1>Trainer Dashboard</h1>";

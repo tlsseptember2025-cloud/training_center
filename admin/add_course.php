@@ -1,12 +1,8 @@
 <?php
-session_start();
 include "../config/database.php";
+include "../includes/auth.php";
+requireRole('admin');
 
-// Check login
-if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
-    header("Location: ../login.php");
-    exit;
-}
 
 // Handle form
 if (isset($_POST['add_course'])) {
