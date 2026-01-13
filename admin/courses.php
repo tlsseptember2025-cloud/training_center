@@ -1,4 +1,5 @@
 <?php
+include "../includes/admin_header.php";
 include "../includes/auth.php";
 requireRole('admin');
 include "../config/database.php";
@@ -30,3 +31,7 @@ while ($course = mysqli_fetch_assoc($result)) {
 }
 ?>
 </table>
+
+<?php
+include "../includes/footer.php";
+?>

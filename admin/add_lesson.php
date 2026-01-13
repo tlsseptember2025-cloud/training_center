@@ -1,4 +1,5 @@
 <?php
+include "../includes/admin_header.php";
 include "../includes/auth.php";
 requireRole('admin');
 include "../config/database.php";
@@ -53,3 +54,6 @@ if (isset($_POST['add_lesson'])) {
     <button name="add_lesson">Add Lesson</button>
 
 </form>
+<?php
+include "../includes/footer.php";
+?>

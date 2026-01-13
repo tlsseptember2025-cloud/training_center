@@ -144,8 +144,8 @@ body {
 
 .stamp {
     position: absolute;
-    bottom: 210px;
-    left: 120px;
+    bottom: 170px;
+    left: 70px;
     width: 330px;
 }
 
@@ -208,6 +208,11 @@ $dompdf->render();
 if (ob_get_length()) {
     ob_end_clean();
 }
+
+mysqli_query($conn, "
+    INSERT INTO certificate_downloads (student_id, course_id)
+    VALUES ($student_id, $course_id)
+");
 
 $dompdf->stream("certificate.pdf", ["Attachment" => true]);
 exit;

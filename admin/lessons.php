@@ -1,4 +1,5 @@
 <?php
+include "../includes/admin_header.php";
 include "../includes/auth.php";
 requireRole('admin');
 include "../config/database.php";
@@ -38,3 +39,7 @@ while ($lesson = mysqli_fetch_assoc($result)) {
 
 <br>
 <a href='dashboard.php'>Back to Dashboard</a>
+
+<?php
+include "../includes/footer.php";
+?>

@@ -1,4 +1,5 @@
 <?php
+include "../includes/student_header.php";
 include "../includes/auth.php";
 requireRole('student');
 include "../config/database.php";
@@ -58,4 +59,6 @@ $courses = mysqli_query($conn, "
 
 </div>
 
-<?php endwhile; ?>
+<?php endwhile; 
+include "../includes/footer.php";
+?>

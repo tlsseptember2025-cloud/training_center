@@ -1,4 +1,5 @@
 <?php
+include "../includes/student_header.php";
 include "../includes/auth.php";
 requireRole('student');
 include "../config/database.php";
@@ -24,4 +25,5 @@ if (mysqli_num_rows($result) > 0) {
 } else {
     echo "No courses available.";
 }
+include "../includes/footer.php";
 ?>

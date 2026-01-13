@@ -1,4 +1,5 @@
 <?php
+include "../includes/student_header.php";
 include "../includes/auth.php";
 requireRole('student');
 include "../config/database.php";
@@ -27,3 +28,5 @@ if (mysqli_query($conn, $sql)) {
 } else {
     echo "Enrollment failed.";
 }
+
+include "../includes/footer.php";

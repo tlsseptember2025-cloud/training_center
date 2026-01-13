@@ -1,4 +1,5 @@
 <?php
+include "../includes/student_header.php";
 include "../includes/auth.php";
 requireRole('student');
 include "../config/database.php";
@@ -26,3 +27,4 @@ mysqli_query(
 );
 
 header("Location: lessons.php?course_id=$course_id");
+include "../includes/footer.php";

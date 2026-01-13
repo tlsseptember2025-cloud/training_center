@@ -1,30 +1,35 @@
 <?php
-session_start();
+// --------------------
+// START SESSION (MANDATORY)
+// --------------------
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
 
-/**
- * Require login
- */
+// --------------------
+// REQUIRE LOGIN
+// --------------------
 function requireLogin() {
     if (!isset($_SESSION['user_id'])) {
-        header("Location: ../login.php");
+        header("Location: /training_center/login.php");
         exit;
     }
 }
 
-/**
- * Require role (admin is superuser)
- */
+// --------------------
+// REQUIRE ROLE
+// --------------------
 function requireRole($role) {
     requireLogin();
 
-    // Admin can access everything
+    // Admin is superuser
     if ($_SESSION['role'] === 'admin') {
         return;
     }
 
     // Other roles must match exactly
     if ($_SESSION['role'] !== $role) {
-        echo "Access denied";
+        header("Location: /training_center/login.php");
         exit;
     }
 }

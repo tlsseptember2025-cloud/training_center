@@ -1,4 +1,5 @@
 <?php
+include "../includes/admin_header.php";
 include "../includes/auth.php";
 requireRole('admin');
 include "../config/database.php";
@@ -26,3 +27,5 @@ if (file_exists($file_path)) {
 mysqli_query($conn, "DELETE FROM lessons WHERE id = $lesson_id");
 
 header("Location: lessons.php");
+include "../includes/footer.php";
+?>
