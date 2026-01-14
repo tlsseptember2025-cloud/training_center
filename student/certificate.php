@@ -18,6 +18,14 @@ use Dompdf\Options;
 // INPUT
 // ====================
 $student_id = $_SESSION['user_id'];
+
+if (
+    isset($_GET['student_id']) &&
+    $_SESSION['role'] === 'admin'
+) {
+    $student_id = (int) $_GET['student_id'];
+}
+
 $course_id  = (int)($_GET['course_id'] ?? 0);
 
 // ====================

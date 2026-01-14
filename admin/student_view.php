@@ -1,0 +1,133 @@
+<?php
+include "../includes/admin_header.php";
+include "../includes/auth.php";
+requireRole('admin');
+include "../config/database.php";
+
+$student_id = (int)($_GET['id'] ?? 0);
+
+// =======================
+// FETCH STUDENT
+// =======================
+$student = mysqli_fetch_assoc(mysqli_query($conn, "
+    SELECT id, name, email, status
+    FROM users
+    WHERE id = $student_id AND role = 'student'
+"));
+
+if (!$student) {
+    echo "<div class='admin-container'><p>Student not found.</p></div>";
+    include "../includes/footer.php";
+    exit;
+}
+
+// =======================
+// FETCH ENROLLMENTS
+// =======================
+$enrollments = mysqli_query($conn, "
+    SELECT c.title
+    FROM enrollments e
+    JOIN courses c ON c.id = e.course_id
+    WHERE e.student_id = $student_id
+");
+
+// =======================
+// FETCH CERTIFICATES
+// =======================
+$certificates = mysqli_query($conn, "
+    SELECT c.id AS course_id, c.title, cert.certificate_code
+    FROM certificates cert
+    JOIN courses c ON c.id = cert.course_id
+    WHERE cert.student_id = $student_id
+");
+?>
+
+<div class="admin-container">
+
+    <!-- PAGE HEADER -->
+    <div class="page-header">
+        <h1>Student Profile</h1>
+        <p>View student details, enrollments, and certificates</p>
+    </div>
+
+    <!-- ACTIONS -->
+    <div class="page-actions">
+        <a href="students.php" class="btn btn-secondary">
+            ← Back to Students
+        </a>
+    </div>
+
+    <!-- BASIC INFO + ENROLLMENTS -->
+    <div class="grid-2">
+
+        <div class="card">
+            <h3>Basic Information</h3>
+            <p><strong>Name:</strong> <?= htmlspecialchars($student['name']) ?></p>
+            <p><strong>Email:</strong> <?= htmlspecialchars($student['email']) ?></p>
+            <p>
+                <strong>Status:</strong>
+                <span class="status <?= $student['status'] ?>">
+                    <?= ucfirst($student['status']) ?>
+                </span>
+            </p>
+        </div>
+
+        <div class="card">
+            <h3>Enrolled Courses</h3>
+
+            <?php if (mysqli_num_rows($enrollments) > 0): ?>
+                <ul class="clean-list">
+                    <?php while ($e = mysqli_fetch_assoc($enrollments)): ?>
+                        <li><?= htmlspecialchars($e['title']) ?></li>
+                    <?php endwhile; ?>
+                </ul>
+            <?php else: ?>
+                <p class="muted">No enrollments</p>
+            <?php endif; ?>
+        </div>
+
+    </div>
+
+    <!-- CERTIFICATES -->
+    <div class="table-card" style="margin-top:30px;">
+        <h3 style="margin-bottom:15px;">Certificates</h3>
+
+        <?php if (mysqli_num_rows($certificates) > 0): ?>
+            <table class="styled-table">
+                <thead>
+                    <tr>
+                        <th>Course</th>
+                        <th>Certificate Code</th>
+                        <th style="width:220px;">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <?php while ($c = mysqli_fetch_assoc($certificates)): ?>
+                        <tr>
+                            <td><?= htmlspecialchars($c['title']) ?></td>
+                            <td><?= $c['certificate_code'] ?></td>
+                            <td class="actions">
+                                <a href="../student/certificate.php?course_id=<?= $c['course_id'] ?>&student_id=<?= $student_id ?>"
+                                   target="_blank"
+                                   class="btn btn-primary">
+                                    <i class="fa fa-download"></i> Download
+                                </a>
+
+                                <a href="../verify.php?code=<?= $c['certificate_code'] ?>"
+                                   target="_blank"
+                                   class="btn btn-secondary">
+                                    <i class="fa fa-check"></i> Verify
+                                </a>
+                            </td>
+                        </tr>
+                    <?php endwhile; ?>
+                </tbody>
+            </table>
+        <?php else: ?>
+            <p class="muted">No certificates issued</p>
+        <?php endif; ?>
+    </div>
+
+</div>
+
+<?php include "../includes/footer.php"; ?>

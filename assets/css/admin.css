@@ -1,0 +1,219 @@
+/* ===============================
+   BASE
+================================ */
+
+body {
+    background: #f5f6fa;
+    font-family: "Segoe UI", Tahoma, sans-serif;
+}
+
+/* ===============================
+   CONTAINER
+================================ */
+
+.admin-container {
+    max-width: 1200px;
+    margin: 40px auto;
+    padding: 0 20px;
+}
+
+.page-header {
+    margin-bottom: 25px;
+}
+
+.page-header h1 {
+    font-size: 26px;
+    font-weight: 600;
+    margin-bottom: 6px;
+}
+
+.page-header p {
+    color: #666;
+}
+
+.page-actions {
+    margin-bottom: 20px;
+}
+
+/* ===============================
+   BUTTONS (FIXED)
+================================ */
+
+.btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 10px 16px;
+    font-size: 14px;
+    font-weight: 600;
+    border-radius: 8px;
+    text-decoration: none;
+    border: none;
+    cursor: pointer;
+}
+
+.btn-primary {
+    background: #2c7be5;
+    color: #fff;
+}
+
+.btn-primary:hover {
+    background: #1a68d1;
+}
+
+.btn-secondary {
+    background: #e9ecef;
+    color: #333;
+}
+
+.btn-secondary:hover {
+    background: #dfe3e6;
+}
+
+.btn-edit {
+    background: #3498db;
+    color: #fff;
+}
+
+.btn-delete {
+    background: #e74c3c;
+    color: #fff;
+}
+
+.btn-edit:hover { background: #2980b9; }
+.btn-delete:hover { background: #c0392b; }
+
+/* ===============================
+   TABLES (RESTORED)
+================================ */
+
+.table-card {
+    background: #fff;
+    padding: 20px;
+    border-radius: 12px;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.05);
+}
+
+/* Used by certificates & courses */
+.styled-table,
+.admin-table,
+.table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.styled-table thead,
+.admin-table thead,
+.table thead {
+    background: #2f3640;
+}
+
+.styled-table th,
+.admin-table th,
+.table th {
+    color: #fff;
+    padding: 14px;
+    text-align: left;
+    font-weight: 600;
+}
+
+.styled-table td,
+.admin-table td,
+.table td {
+    padding: 14px;
+    border-bottom: 1px solid #eee;
+}
+
+.styled-table tr:hover,
+.admin-table tr:hover,
+.table tr:hover {
+    background: #f4f6f8;
+}
+
+/* Actions column */
+.actions a {
+    margin-right: 10px;
+}
+
+/* ===============================
+   STATUS BADGES
+================================ */
+
+.status {
+    display: inline-block;
+    padding: 4px 14px;
+    border-radius: 20px;
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.status.active {
+    background: #e6f4ea;
+    color: #2e7d32;
+}
+
+.status.disabled {
+    background: #fdecea;
+    color: #c62828;
+}
+
+/* ===============================
+   FORMS
+================================ */
+
+.form-container {
+    max-width: 600px;
+    margin: 40px auto;
+    background: #fff;
+    padding: 30px;
+    border-radius: 12px;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.08);
+}
+
+.form-group {
+    margin-bottom: 18px;
+}
+
+.form-group label {
+    display: block;
+    font-weight: 600;
+    margin-bottom: 6px;
+}
+
+.form-group input,
+.form-group textarea {
+    width: 100%;
+    padding: 12px;
+    border-radius: 6px;
+    border: 1px solid #ccc;
+}
+
+/* ===============================
+   DASHBOARD CARDS
+================================ */
+
+.grid-2 {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 24px;
+}
+
+.grid-3 {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 24px;
+}
+
+.card {
+    background: #fff;
+    padding: 24px;
+    border-radius: 14px;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.05);
+    text-align: center;
+}
+
+/* ===============================
+   UTILS
+================================ */
+
+.muted { color: #777; }

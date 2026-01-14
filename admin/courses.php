@@ -7,31 +7,49 @@ include "../config/database.php";
 $result = mysqli_query($conn, "SELECT * FROM courses");
 ?>
 
-<h1>All Courses (Admin)</h1>
+<div class="admin-container">
 
-<table border="1" cellpadding="10">
-    <tr>
-        <th>Title</th>
-        <th>Description</th>
-        <th>Price</th>
-        <th>Actions</th>
-    </tr>
+    <h1 class="page-title">All Courses</h1>
 
-<?php
-while ($course = mysqli_fetch_assoc($result)) {
-    echo "<tr>";
-    echo "<td>{$course['title']}</td>";
-    echo "<td>{$course['description']}</td>";
-    echo "<td>{$course['price']}</td>";
-    echo "<td>
-            <a href='edit_course.php?id={$course['id']}'>Edit</a> |
-            <a href='delete_course.php?id={$course['id']}'>Delete</a>
-          </td>";
-    echo "</tr>";
-}
-?>
-</table>
+    <div class="page-actions">
+    <a href="add_course.php" class="btn btn-primary">
+        <i class="fa fa-plus"></i> Add Course
+    </a>
+    </div>
+    <br>
+    <table class="admin-table">
+        <thead>
+            <tr>
+                <th>Course Title</th>
+                <th>Description</th>
+                <th>Price</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
 
-<?php
-include "../includes/footer.php";
-?>
+        <tbody>
+        <?php while ($course = mysqli_fetch_assoc($result)): ?>
+            <tr>
+                <td><?= htmlspecialchars($course['title']) ?></td>
+                <td><?= htmlspecialchars($course['description']) ?></td>
+                <td>$<?= htmlspecialchars($course['price']) ?></td>
+                <td>
+                    <a class="btn btn-edit"
+                       href="edit_course.php?id=<?= $course['id'] ?>">
+                        Edit
+                    </a>
+
+                    <a class="btn btn-delete"
+                       href="delete_course.php?id=<?= $course['id'] ?>"
+                       onclick="return confirm('Delete this course?')">
+                        Delete
+                    </a>
+                </td>
+            </tr>
+        <?php endwhile; ?>
+        </tbody>
+    </table>
+
+</div>
+
+<?php include "../includes/footer.php"; ?>

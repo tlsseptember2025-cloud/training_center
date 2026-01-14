@@ -54,6 +54,10 @@ if (isset($_POST['login'])) {
         Login
     </button>
 </form>
+<p style="text-align:center; margin-top:18px;">
+    Don't have an account?
+    <a href="register.php">Register</a>
+</p>
 </div>
 
 <?php include "includes/footer.php"; ?>

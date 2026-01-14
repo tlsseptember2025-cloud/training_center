@@ -1,43 +1,51 @@
 <?php
 include "../includes/admin_header.php";
-include "../config/database.php";
 include "../includes/auth.php";
 requireRole('admin');
+include "../config/database.php";
 
-
-// Handle form
-if (isset($_POST['add_course'])) {
-
+if (isset($_POST['save'])) {
     $title = $_POST['title'];
     $description = $_POST['description'];
     $price = $_POST['price'];
 
-    $sql = "INSERT INTO courses (title, description, price)
-            VALUES ('$title', '$description', '$price')";
+    mysqli_query($conn, "
+        INSERT INTO courses (title, description, price)
+        VALUES ('$title', '$description', '$price')
+    ");
 
-    if (mysqli_query($conn, $sql)) {
-        echo "Course added successfully!";
-    } else {
-        echo "Error adding course";
-    }
+    header("Location: courses.php");
+    exit;
 }
 ?>
 
-<h2>Add Course</h2>
+<div class="form-container">
+    <h2>Add New Course</h2>
 
-<form method="POST">
-    Course Title:<br>
-    <input type="text" name="title"><br><br>
+    <form method="POST">
 
-    Description:<br>
-    <textarea name="description"></textarea><br><br>
+        <div class="form-group">
+            <label>Course Title</label>
+            <input type="text" name="title" required>
+        </div>
 
-    Price:<br>
-    <input type="number" step="0.01" name="price"><br><br>
+        <div class="form-group">
+            <label>Description</label>
+            <textarea name="description" required></textarea>
+        </div>
 
-    <button name="add_course">Add Course</button>
-</form>
+        <div class="form-group">
+            <label>Price</label>
+            <input type="number" name="price" required>
+        </div>
 
-<?php
-include "../includes/footer.php";
-?>
+        <div class="form-actions">
+            <button type="submit" name="save" class="btn btn-primary">
+                <i class="fa fa-save"></i> Save Course
+            </button>
+        </div>
+
+    </form>
+</div>
+
+<?php include "../includes/footer.php"; ?>

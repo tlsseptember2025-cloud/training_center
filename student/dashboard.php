@@ -2,63 +2,63 @@
 include "../includes/auth.php";
 requireRole('student');
 include "../config/database.php";
-include "../includes/student_header.php";
 
 $student_id = $_SESSION['user_id'];
 
-// Stats
-$totalCourses = mysqli_fetch_assoc(mysqli_query($conn,
+$enrolled = mysqli_fetch_assoc(mysqli_query($conn,
     "SELECT COUNT(*) total FROM enrollments WHERE student_id=$student_id"
 ))['total'];
 
-$completedCourses = mysqli_fetch_assoc(mysqli_query($conn,
-    "SELECT COUNT(DISTINCT course_id) total 
-     FROM certificates WHERE student_id=$student_id"
+$completed = mysqli_fetch_assoc(mysqli_query($conn,
+    "SELECT COUNT(*) total FROM certificates WHERE student_id=$student_id"
 ))['total'];
 
-$certificates = $completedCourses;
+include "../includes/student_header.php";
 ?>
 
-<h2>Welcome back 👋</h2>
+<div class="dashboard-container">
 
-<div style="display:flex; gap:20px; margin-top:20px;">
-    <div style="flex:1; background:white; padding:20px; border-radius:8px;">
-        <h3>📚 Enrolled Courses</h3>
-        <p style="font-size:24px;"><?= $totalCourses ?></p>
+    <h2>Welcome back 👋</h2>
+    <p>Your learning overview</p>
+
+    <!-- STATS -->
+    <div class="grid-3">
+        <div class="card">
+            <i class="fa-solid fa-book-open" style="color:#2c7be5;"></i>
+            <h2><?= $enrolled ?></h2>
+            <p>Enrolled Courses</p>
+        </div>
+
+        <div class="card">
+            <i class="fa-solid fa-check-circle" style="color:#28a745;"></i>
+            <h2><?= $completed ?></h2>
+            <p>Completed Courses</p>
+        </div>
+
+        <div class="card">
+            <i class="fa-solid fa-award" style="color:#fd7e14;"></i>
+            <h2><?= $completed ?></h2>
+            <p>Certificates Earned</p>
+        </div>
     </div>
 
-    <div style="flex:1; background:white; padding:20px; border-radius:8px;">
-        <h3>🎓 Completed Courses</h3>
-        <p style="font-size:24px;"><?= $completedCourses ?></p>
+    <!-- ACTIONS -->
+    <h3 style="margin-top:50px;">Quick Actions</h3>
+
+    <div class="grid-2">
+        <a href="my_courses.php" class="card card-link">
+            <i class="fa-solid fa-play-circle" style="color:#2c7be5;"></i>
+            <h3>Continue Learning</h3>
+            <p>Resume your courses</p>
+        </a>
+
+        <a href="my_certificates.php" class="card card-link">
+            <i class="fa-solid fa-file-pdf" style="color:#28a745;"></i>
+            <h3>My Certificates</h3>
+            <p>Download certificates</p>
+        </a>
     </div>
 
-    <div style="flex:1; background:white; padding:20px; border-radius:8px;">
-        <h3>📜 Certificates</h3>
-        <p style="font-size:24px;"><?= $certificates ?></p>
-    </div>
 </div>
-
-<h3 style="margin-top:40px;">Continue Learning</h3>
-
-<?php
-$courses = mysqli_query($conn, "
-    SELECT c.id, c.title
-    FROM enrollments e
-    JOIN courses c ON c.id = e.course_id
-    WHERE e.student_id = $student_id
-    LIMIT 5
-");
-
-if (mysqli_num_rows($courses) === 0): ?>
-    <p>You are not enrolled in any courses yet.</p>
-<?php else: ?>
-<ul>
-<?php while ($c = mysqli_fetch_assoc($courses)): ?>
-    <li>
-        <a href="my_courses.php"><?= htmlspecialchars($c['title']) ?></a>
-    </li>
-<?php endwhile; ?>
-</ul>
-<?php endif; ?>
 
 <?php include "../includes/footer.php"; ?>
