@@ -9,9 +9,9 @@ $current = basename($_SERVER['PHP_SELF']);
 <html>
 <head>
 <meta charset="UTF-8">
-<link rel="stylesheet" href="../assets/css/admin.css">
 <link rel="stylesheet" href="/training_center/assets/css/dashboard.css">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<link rel="stylesheet" href="/training_center/assets/css/admin.css">
 <title>Admin Dashboard</title>
 
 <style>
@@ -58,6 +58,7 @@ body {
     padding: 30px;
 }
 </style>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 </head>
 
 <body>
