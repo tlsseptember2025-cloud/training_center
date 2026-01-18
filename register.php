@@ -59,10 +59,12 @@ include "includes/public_header.php";
     </p>
 <?php endif; ?>
 
-<form method="POST" action="register.php">
+<form method="POST" action="register.php" autocomplete="off">
+
+    <input type="text" style="display:none" autocomplete="off">
 
     <label>Full Name</label>
-    <input type="text" name="name" required style="
+    <input type="text" name="name" required autocomplete="off" style="
         width:100%;
         padding:12px;
         margin:8px 0 18px;
@@ -71,7 +73,7 @@ include "includes/public_header.php";
     ">
 
     <label>Email</label>
-    <input type="email" name="email" required style="
+    <input type="email" name="email" required autocomplete="off" style="
         width:100%;
         padding:12px;
         margin:8px 0 18px;
@@ -80,7 +82,7 @@ include "includes/public_header.php";
     ">
 
     <label>Password</label>
-    <input type="password" name="password" required style="
+    <input type="password" name="password" autocomplete="off" required style="
         width:100%;
         padding:12px;
         margin:8px 0 22px;

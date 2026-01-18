@@ -45,11 +45,17 @@ include "../includes/admin_header.php";
 
     <h3 style="margin-top:50px;">Management</h3>
 
-    <div class="grid-2">
+    <div class="grid-3">
         <a href="courses.php" class="card card-link">
             <i class="fa-solid fa-folder-plus" style="color:#2c7be5;"></i>
             <h3>Manage Courses</h3>
             <p>Create & edit courses</p>
+        </a>
+
+        <a href="trainers.php" class="dashboard-card">
+            <i class="fa fa-chalkboard-teacher"></i>
+            <h3>Manage Trainers</h3>
+            <p>Create & manage trainer accounts</p>
         </a>
 
         <a href="students.php" class="card card-link">

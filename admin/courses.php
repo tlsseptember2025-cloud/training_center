@@ -4,15 +4,17 @@ include "../includes/auth.php";
 requireRole('admin');
 include "../config/database.php";
 
-$result = mysqli_query($conn, "SELECT * FROM courses ORDER BY id DESC");
+$result = mysqli_query($conn, "SELECT * FROM courses");
 ?>
 
 <div class="admin-container">
 
-    <div class="page-header">
-        <h1 class="page-title">All Courses</h1>
-        <p class="muted">Manage your course catalog and lessons</p>
-    </div>
+    <h1 class="page-title">Courses</h1>
+
+    <!-- BACK BUTTON -->
+    <a href="dashboard.php" class="back-btn">
+        <i class="fa fa-arrow-left"></i> Back to Dashboard
+    </a>
 
     <div class="page-actions">
         <a href="add_course.php" class="btn btn-primary">
@@ -24,10 +26,10 @@ $result = mysqli_query($conn, "SELECT * FROM courses ORDER BY id DESC");
         <table class="styled-table">
             <thead>
                 <tr>
-                    <th>Course Title</th>
+                    <th>Title</th>
                     <th>Description</th>
                     <th>Price</th>
-                    <th style="width: 260px;">Actions</th>
+                    <th>Actions</th>
                 </tr>
             </thead>
 
@@ -36,32 +38,22 @@ $result = mysqli_query($conn, "SELECT * FROM courses ORDER BY id DESC");
                 <tr>
                     <td><?= htmlspecialchars($course['title']) ?></td>
                     <td><?= htmlspecialchars($course['description']) ?></td>
-                    <td>$<?= htmlspecialchars($course['price']) ?></td>
+                    <td><?= htmlspecialchars($course['price']) ?>$</td>
 
                     <td class="actions">
-
-                        <!-- Edit Course -->
-                        <a href="edit_course.php?id=<?= $course['id'] ?>"
-                           class="btn btn-edit"
-                           title="Edit Course">
-                            <i class="fa fa-edit"></i> Edit
+                        <a href="course_view.php?id=<?= $course['id'] ?>" title="View">
+                            <i class="fa fa-eye"></i>
                         </a>
 
-                        <!-- Delete Course -->
+                        <a href="edit_course.php?id=<?= $course['id'] ?>" class="btn-edit">
+                            Edit
+                        </a>
+
                         <a href="delete_course.php?id=<?= $course['id'] ?>"
-                           class="btn btn-delete"
-                           onclick="return confirm('Delete this course AND all its lessons?')"
-                           title="Delete Course">
-                            <i class="fa fa-trash"></i> Delete
+                           class="btn-delete"
+                           onclick="return confirm('Delete this course?')">
+                           Delete
                         </a>
-
-                        <!-- Manage Lessons -->
-                        <a href="course_lessons.php?course_id=<?= $course['id'] ?>"
-                           class="btn btn-primary"
-                           title="Manage Lessons">
-                            <i class="fa fa-book"></i> Lessons
-                        </a>
-
                     </td>
                 </tr>
             <?php endwhile; ?>

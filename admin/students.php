@@ -4,7 +4,6 @@ include "../includes/auth.php";
 requireRole('admin');
 include "../config/database.php";
 
-// Fetch students only
 $result = mysqli_query($conn, "
     SELECT 
         u.id,
@@ -25,14 +24,19 @@ $result = mysqli_query($conn, "
 
     <div class="page-header">
         <h1 class="page-title">Students</h1>
-        <p class="muted">Manage student accounts, enrollments, and access</p>
+        <p class="muted">Manage student accounts, activity, and access</p>
     </div>
+
+    <!-- BACK BUTTON -->
+    <a href="dashboard.php" class="back-btn">
+        <i class="fa fa-arrow-left"></i> Back to Dashboard
+    </a>
 
     <div class="table-card">
         <table class="styled-table">
             <thead>
                 <tr>
-                    <th>Student</th>
+                    <th>Name</th>
                     <th>Email</th>
                     <th>Enrollments</th>
                     <th>Certificates</th>
@@ -42,9 +46,8 @@ $result = mysqli_query($conn, "
             </thead>
 
             <tbody>
-                <?php while ($row = mysqli_fetch_assoc($result)): ?>
-                <tr class="<?= $row['status'] === 'disabled' ? 'disabled-row' : '' ?>">
-                
+            <?php while ($row = mysqli_fetch_assoc($result)): ?>
+                <tr>
                     <td><?= htmlspecialchars($row['name']) ?></td>
                     <td><?= htmlspecialchars($row['email']) ?></td>
                     <td><?= $row['enrollments'] ?></td>
@@ -57,73 +60,28 @@ $result = mysqli_query($conn, "
                     </td>
 
                     <td class="actions">
-
-                        <a href="student_view.php?id=<?= $row['id'] ?>" title="View">
-                            <i class="fa fa-eye"></i>
-                        </a>
+                        <a href="student_view.php?id=<?= $row['id'] ?>" title="View"><i class="fa fa-eye"></i></a>
 
                         <?php if ($row['status'] === 'active'): ?>
-
-                            <a href="#" 
-                            onclick="confirmDisable(<?= $row['id'] ?>)"
-                            title="Disable">
+                            <a href="student_toggle.php?id=<?= $row['id'] ?>&action=disable"
+                               onclick="return confirm('Disable this student?')"
+                               title="Disable">
                                 <i class="fa fa-ban"></i>
                             </a>
-
                         <?php else: ?>
-
-                            <a href="#" 
-                            onclick="confirmEnable(<?= $row['id'] ?>)"
-                            title="Enable">
+                            <a href="student_toggle.php?id=<?= $row['id'] ?>&action=enable"
+                               onclick="return confirm('Enable this student?')"
+                               title="Enable">
                                 <i class="fa fa-check"></i>
                             </a>
-
                         <?php endif; ?>
-
                     </td>
-                    
                 </tr>
-                <?php endwhile; ?>
+            <?php endwhile; ?>
             </tbody>
         </table>
     </div>
 
 </div>
 
-<script>
-function confirmDisable(id) {
-    Swal.fire({
-        title: "Disable Student?",
-        text: "The student will lose access to all courses.",
-        icon: "warning",
-        showCancelButton: true,
-        confirmButtonColor: "#d33",
-        cancelButtonColor: "#3085d6",
-        confirmButtonText: "Yes, disable"
-    }).then((result) => {
-        if (result.isConfirmed) {
-            window.location = "student_toggle.php?id=" + id + "&action=disable";
-        }
-    });
-}
-
-function confirmEnable(id) {
-    Swal.fire({
-        title: "Enable Student?",
-        text: "The student will regain full access.",
-        icon: "info",
-        showCancelButton: true,
-        confirmButtonColor: "#28a745",
-        cancelButtonColor: "#3085d6",
-        confirmButtonText: "Yes, enable"
-    }).then((result) => {
-        if (result.isConfirmed) {
-            window.location = "student_toggle.php?id=" + id + "&action=enable";
-        }
-    });
-}
-</script>
-
-
 <?php include "../includes/footer.php"; ?>
-
