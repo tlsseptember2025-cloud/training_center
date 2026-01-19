@@ -4,31 +4,38 @@ include "../includes/auth.php";
 requireRole('admin');
 include "../config/database.php";
 
-$message = "";
+// GET TRAINERS
+$trainers = mysqli_query($conn, "SELECT id, name FROM users WHERE role='trainer'");
 
 if (isset($_POST['add_course'])) {
-    $title = mysqli_real_escape_string($conn, $_POST['title']);
-    $description = mysqli_real_escape_string($conn, $_POST['description']);
-    $price = (float) $_POST['price'];
 
-    $sql = "INSERT INTO courses (title, description, price)
-            VALUES ('$title', '$description', $price)";
+    $title = $_POST['title'];
+    $description = $_POST['description'];
+    $price = $_POST['price'];
+    $trainer_id = $_POST['trainer_id'];
 
-    if (mysqli_query($conn, $sql)) {
-        header("Location: courses.php?added=1");
+    $insert = mysqli_query($conn, "
+        INSERT INTO courses (title, description, price)
+        VALUES ('$title', '$description', '$price')
+    ");
+
+    if ($insert) {
+        $course_id = mysqli_insert_id($conn);
+
+        // Assign trainer
+        mysqli_query($conn, "
+            INSERT INTO trainer_courses (trainer_id, course_id)
+            VALUES ($trainer_id, $course_id)
+        ");
+
+        header("Location: courses.php?success=1");
         exit;
-    } else {
-        $message = "<p style='color:red;text-align:center;'>Database error.</p>";
     }
 }
 ?>
 
-<link rel="stylesheet" href="/training_center/assets/css/forms.css">
-
-<div class="form-wrapper">
+<div class="form-container">
     <h2>Add New Course</h2>
-
-    <?= $message ?>
 
     <form method="POST">
 
@@ -47,13 +54,23 @@ if (isset($_POST['add_course'])) {
             <input type="number" name="price" step="0.01" required>
         </div>
 
-        <div class="form-actions">
-            <button type="submit" name="add_course" class="btn-primary">
-                <i class="fa fa-check"></i> Add Course
-            </button>
+        <div class="form-group">
+            <label>Assign Trainer</label>
+            <select name="trainer_id" required>
+                <option value="">-- Select Trainer --</option>
+                <?php while ($t = mysqli_fetch_assoc($trainers)): ?>
+                    <option value="<?= $t['id'] ?>"><?= htmlspecialchars($t['name']) ?></option>
+                <?php endwhile; ?>
+            </select>
+        </div>
 
-            <a href="courses.php" class="btn-secondary">Cancel</a>
+        <div class="form-actions">
+            <button class="btn btn-primary" name="add_course">Save Course</button>
         </div>
 
     </form>
+
 </div>
+
+<?php include "../includes/footer.php"; ?>
+
