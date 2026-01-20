@@ -258,3 +258,20 @@ body {
 .back-btn i {
     color: #555;
 }
+
+.alert {
+    padding: 12px 18px;
+    margin: 15px 0;
+    border-radius: 6px;
+    font-weight: 600;
+}
+
+.alert.success {
+    background: #e6f4ea;
+    color: #2e7d32;
+}
+
+.alert.warning {
+    background: #fff4e5;
+    color: #b26a00;
+}

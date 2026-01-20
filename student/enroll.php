@@ -1,32 +1,40 @@
 <?php
-include "../includes/student_header.php";
-include "../includes/auth.php";
+include "../includes/auth.php";  // session already started here
 requireRole('student');
 include "../config/database.php";
 
-$student_id = $_SESSION['user_id'];
-$course_id = $_GET['course_id'];
+if (!isset($_GET['course_id'])) {
+    die("Invalid course.");
+}
 
-$check = mysqli_query(
-    $conn,
-    "SELECT * FROM enrollments 
-     WHERE student_id = $student_id 
-     AND course_id = $course_id"
-);
+$student_id = $_SESSION['user_id'];
+$course_id  = intval($_GET['course_id']);
+
+// Check if course exists
+$check_course = mysqli_query($conn, "SELECT id FROM courses WHERE id = $course_id");
+if (mysqli_num_rows($check_course) === 0) {
+    die("Invalid course.");
+}
+
+// Check if already enrolled
+$check = mysqli_query($conn, "
+    SELECT id FROM enrollments
+    WHERE student_id = $student_id AND course_id = $course_id
+");
 
 if (mysqli_num_rows($check) > 0) {
-    echo "You are already enrolled in this course.";
+    header("Location: courses.php?msg=already_enrolled");
     exit;
 }
 
-$sql = "INSERT INTO enrollments (student_id, course_id)
-        VALUES ($student_id, $course_id)";
+// Enroll student
+mysqli_query($conn, "
+    INSERT INTO enrollments (student_id, course_id)
+    VALUES ($student_id, $course_id)
+");
 
-if (mysqli_query($conn, $sql)) {
-    echo "Enrollment successful!";
-    echo "<br><a href='courses.php'>Back to courses</a>";
-} else {
-    echo "Enrollment failed.";
-}
+// Redirect back
+header("Location: courses.php?msg=enrolled_success");
+exit;
+?>
 
-include "../includes/footer.php";

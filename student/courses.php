@@ -1,8 +1,18 @@
+
 <?php
 include "../includes/student_header.php";
 include "../includes/auth.php";
 requireRole('student');
 include "../config/database.php";
+
+if (isset($_GET['msg'])) {
+    if ($_GET['msg'] == "enrolled_success") {
+        echo "<div class='alert success'>Successfully enrolled!</div>";
+    }
+    if ($_GET['msg'] == "already_enrolled") {
+        echo "<div class='alert warning'>You are already enrolled.</div>";
+    }
+}
 
 $student_id = $_SESSION['user_id'];
 
@@ -87,9 +97,8 @@ $available = mysqli_query($conn, "
                     <td><?= htmlspecialchars($row['title']) ?></td>
                     <td><?= htmlspecialchars($row['description']) ?></td>
                     <td>
-                        <a href="enroll.php?id=<?= $row['id'] ?>" class="btn btn-primary">
-                            Enroll
-                        </a>
+                        <a href="enroll.php?course_id=<?= $row['id'] ?>" class="btn btn-primary">Enroll</a>
+
                     </td>
                 </tr>
             <?php endwhile; ?>
