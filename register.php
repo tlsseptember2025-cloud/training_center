@@ -29,6 +29,19 @@ if (isset($_POST['register'])) {
                 VALUES ('$name', '$email', '$hashedPassword', 'student')
             ");
 
+            // Get new user ID
+            $newUserID = mysqli_insert_id($conn);
+
+            // Store session for auto-login and navbar display
+            $_SESSION['user_id'] = $newUserID;
+            $_SESSION['role'] = "student";
+            $_SESSION['user_name'] = $name;
+
+            // Redirect student to dashboard
+            header("Location: student/dashboard.php");
+            exit;
+
+
             // Redirect to login after successful registration
             header("Location: login.php");
             exit;

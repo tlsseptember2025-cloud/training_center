@@ -1,62 +1,137 @@
 <?php
+include "../includes/student_header.php";
 include "../includes/auth.php";
 requireRole('student');
 include "../config/database.php";
 
 $student_id = $_SESSION['user_id'];
 
-$enrolled = mysqli_fetch_assoc(mysqli_query($conn,
-    "SELECT COUNT(*) total FROM enrollments WHERE student_id=$student_id"
-))['total'];
+// Count enrolled courses
+$enrolled = mysqli_fetch_row(mysqli_query($conn,
+    "SELECT COUNT(*) FROM enrollments WHERE student_id = $student_id"
+))[0];
 
-$completed = mysqli_fetch_assoc(mysqli_query($conn,
-    "SELECT COUNT(*) total FROM certificates WHERE student_id=$student_id"
-))['total'];
+// Count completed (placeholder)
+$completed = 0;
 
-include "../includes/student_header.php";
+// Count certificates
+$certificates = mysqli_fetch_row(mysqli_query($conn,
+    "SELECT COUNT(*) FROM certificates WHERE student_id = $student_id"
+))[0];
+
+// Fetch one enrolled course for "Continue Learning"
+$course_query = mysqli_query($conn, "
+    SELECT c.id, c.title 
+    FROM courses c
+    JOIN enrollments e ON e.course_id = c.id
+    WHERE e.student_id = $student_id
+    LIMIT 1
+");
+$next_course = mysqli_fetch_assoc($course_query);
 ?>
 
-<div class="dashboard-container">
+<div class="admin-container">
 
-    <h2>Welcome back 👋</h2>
-    <p>Your learning overview</p>
+    <!-- PAGE HEADER -->
+    <div class="page-header">
+        <h1 class="page-title">Welcome back 👋</h1>
+        <p class="muted">Your learning overview</p>
+    </div>
 
-    <!-- STATS -->
-    <div class="grid-3">
-        <div class="card">
-            <i class="fa-solid fa-book-open" style="color:#2c7be5;"></i>
+    <!-- ======= DASHBOARD STAT CARDS ======= -->
+    <div class="dashboard-cards" style="
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 25px;
+    ">
+        <div class="card" style="
+            background: #fff;
+            padding: 30px;
+            border-radius: 14px;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.06);
+            text-align: center;
+        ">
+            <div style="font-size: 40px;">📘</div>
             <h2><?= $enrolled ?></h2>
-            <p>Enrolled Courses</p>
+            <p class="muted">Enrolled Courses</p>
         </div>
 
-        <div class="card">
-            <i class="fa-solid fa-check-circle" style="color:#28a745;"></i>
+        <div class="card" style="
+            background: #fff;
+            padding: 30px;
+            border-radius: 14px;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.06);
+            text-align: center;
+        ">
+            <div style="font-size: 40px;">✔️</div>
             <h2><?= $completed ?></h2>
-            <p>Completed Courses</p>
+            <p class="muted">Completed Courses</p>
         </div>
 
-        <div class="card">
-            <i class="fa-solid fa-award" style="color:#fd7e14;"></i>
-            <h2><?= $completed ?></h2>
-            <p>Certificates Earned</p>
+        <div class="card" style="
+            background: #fff;
+            padding: 30px;
+            border-radius: 14px;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.06);
+            text-align: center;
+        ">
+            <div style="font-size: 40px;">🏅</div>
+            <h2><?= $certificates ?></h2>
+            <p class="muted">Certificates Earned</p>
         </div>
     </div>
 
-    <!-- ACTIONS -->
-    <h3 style="margin-top:50px;">Quick Actions</h3>
+    <br><br>
 
-    <div class="grid-2">
-        <a href="my_courses.php" class="card card-link">
-            <i class="fa-solid fa-play-circle" style="color:#2c7be5;"></i>
-            <h3>Continue Learning</h3>
-            <p>Resume your courses</p>
-        </a>
+    <!-- ======= QUICK ACTIONS ======= -->
+    <h2 style="margin-bottom: 15px;">Quick Actions</h2>
 
-        <a href="my_certificates.php" class="card card-link">
-            <i class="fa-solid fa-file-pdf" style="color:#28a745;"></i>
-            <h3>My Certificates</h3>
-            <p>Download certificates</p>
-        </a>
+    <div class="dashboard-actions" style="
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 25px;
+    ">
+
+        <!-- CONTINUE LEARNING -->
+        <div class="action-card" style="
+            background: #fff;
+            padding: 30px;
+            border-radius: 14px;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.06);
+        ">
+            <div style="font-size: 35px;">▶️</div>
+            <h3 style="margin-top: 10px;">Continue Learning</h3>
+
+            <?php if ($next_course): ?>
+                <p class="muted">Resume your course</p>
+                <a href="course.php?id=<?= $next_course['id'] ?>"
+                   class="btn btn-primary">
+                    Open Course
+                </a>
+            <?php else: ?>
+                <p class="muted">You have no enrolled courses</p>
+                <a href="courses.php" class="btn btn-primary">
+                    Browse Courses
+                </a>
+            <?php endif; ?>
+        </div>
+
+        <!-- CERTIFICATES -->
+        <div class="action-card" style="
+            background: #fff;
+            padding: 30px;
+            border-radius: 14px;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.06);
+        ">
+            <div style="font-size: 35px;">📄</div>
+            <h3 style="margin-top: 10px;">My Certificates</h3>
+            <p class="muted">Download certificates</p>
+
+            <a href="certificates.php" class="btn btn-secondary">
+                View Certificates
+            </a>
+        </div>
+
     </div>
 
 </div>

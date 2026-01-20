@@ -137,7 +137,17 @@ body {
 
 <!-- NAVIGATION BAR -->
 <div class="nav">
-    <div class="logo">🛠 Admin Panel</div>
+    <?php
+// Make sure session is active
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
+
+// SAFELY load name + role
+$userName = isset($_SESSION['user_name']) ? $_SESSION['user_name'] : "User";
+$userRole = isset($_SESSION['role']) ? ucfirst($_SESSION['role']) : "";
+?>
+<div class="logo"><?= htmlspecialchars($userName) ?> (<?= $userRole ?>)</div>
 
     <a href="/training_center/admin/dashboard.php"
        class="<?= $current === 'dashboard.php' ? 'active' : '' ?>">

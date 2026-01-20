@@ -64,7 +64,12 @@ body {
 <body>
 
 <div class="nav">
-    <div class="logo">🛠 Admin Panel</div>
+    <div class="logo">
+    👨‍🏫 <?= htmlspecialchars($_SESSION['user_name']) ?>
+    <span style="opacity:0.7; font-size:14px;">
+        (Trainer)
+    </span>
+</div>
 
     <a href="/training_center/admin/dashboard.php"
        class="<?= $current === 'dashboard.php' ? 'active' : '' ?>">
