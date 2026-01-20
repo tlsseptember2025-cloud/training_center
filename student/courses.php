@@ -59,7 +59,7 @@ $available = mysqli_query($conn, "
                         <td><?= htmlspecialchars($row['title']) ?></td>
                         <td><?= htmlspecialchars($row['description']) ?></td>
                         <td>
-                            <a href="course.php?id=<?= $row['id'] ?>" class="btn btn-primary">
+                            <a href="lessons.php?course_id=<?= $row['id'] ?>">
                                 Open
                             </a>
                         </td>

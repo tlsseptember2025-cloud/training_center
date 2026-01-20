@@ -52,7 +52,7 @@ $courses = mysqli_query($conn, "
         </a>
     <?php else: ?>
         <strong style="color:orange;">⏳ In Progress</strong><br><br>
-        <a href="lessons.php?course_id=<?php echo $course['id']; ?>">
+        <a href="lessons.php?course_id=<?= $row['id'] ?>">
             Continue Lessons
         </a>
     <?php endif; ?>

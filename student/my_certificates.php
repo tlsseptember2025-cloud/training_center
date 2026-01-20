@@ -79,10 +79,7 @@ $query = mysqli_query($conn, "
         <td><?= htmlspecialchars($row['certificate_code']) ?></td>
         <td><?= date("F j, Y", strtotime($row['created_at'])) ?></td>
         <td>
-            <a class="button" 
-               href="certificate.php?course_id=<?= $row['course_id'] ?>">
-               Download
-            </a>
+            <a href="certificate.php?id=<?= $row['id'] ?>" class="btn btn-primary">Download</a>
         </td>
     </tr>
     <?php endwhile; ?>
