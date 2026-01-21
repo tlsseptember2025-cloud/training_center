@@ -140,3 +140,33 @@
     background: #2c7be5;
     transition: width 0.4s ease;
 }
+
+.title-icon {
+    font-size: 28px;
+    margin-right: 10px;
+    color: #3b82f6;
+}
+
+.icon-sm {
+    font-size: 20px;
+    margin-right: 6px;
+    color: #3b82f6;
+}
+
+.top-nav {
+    display: flex;
+    align-items: center;
+}
+
+.right-menu {
+    margin-left: auto;
+}
+
+.logout {
+    color: #e53935; /* red */
+    font-weight: 500;
+}
+
+.logout:hover {
+    color: #c62828; /* darker red on hover */
+}

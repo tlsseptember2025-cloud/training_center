@@ -11,14 +11,11 @@ if ($course_id <= 0) {
     die("<h2 style='color:red;text-align:center;margin-top:40px;'>Invalid course.</h2>");
 }
 
-// --- Check trainer assignment ---
-$colCheck = mysqli_query($conn, "SHOW COLUMNS FROM trainer_courses LIKE 'trainer_id'");
-$trainerColumn = mysqli_num_rows($colCheck) ? "trainer_id" : "user_id";
-
+// --- Correct trainer assignment check using courses table ---
 $assigned = mysqli_query($conn, "
-    SELECT 1 FROM trainer_courses
-    WHERE $trainerColumn = $trainer_id
-      AND course_id = $course_id
+    SELECT 1 FROM courses
+    WHERE id = $course_id
+      AND trainer_id = $trainer_id
 ");
 
 if (mysqli_num_rows($assigned) == 0) {

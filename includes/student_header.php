@@ -73,8 +73,8 @@ $current = basename($_SERVER['PHP_SELF']);
     <a href="/training_center/student/courses.php"
        class="<?= $current === 'courses.php' ? 'active' : '' ?>">My Courses</a>
 
-    <a href="/training_center/student/certificates.php"
-       class="<?= $current === 'certificates.php' ? 'active' : '' ?>">My Certificates</a>
+    <a href="/training_center/student/my_certificates.php"
+       class="<?= $current === 'my_certificates.php' ? 'active' : '' ?>">My Certificates</a>
 
     <a href="/training_center/logout.php">Logout</a>
 </div>

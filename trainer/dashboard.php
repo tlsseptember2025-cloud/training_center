@@ -6,13 +6,13 @@ include "../includes/trainer_header.php";
 
 $trainer_id = $_SESSION['user_id'];
 
-// Fetch assigned courses
 $courses = mysqli_query($conn, "
-    SELECT c.*
-    FROM courses c
-    INNER JOIN trainer_courses tc ON tc.course_id = c.id
-    WHERE tc.trainer_id = $trainer_id
+    SELECT * 
+    FROM courses
+    WHERE trainer_id = $trainer_id
+    ORDER BY created_at DESC
 ");
+
 ?>
 
 <div class="admin-container">

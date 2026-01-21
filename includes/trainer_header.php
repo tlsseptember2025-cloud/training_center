@@ -2,6 +2,8 @@
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
+
+$trainerName = $_SESSION['user_name'] ?? "Trainer";
 $current = basename($_SERVER['PHP_SELF']);
 ?>
 
@@ -10,25 +12,27 @@ $current = basename($_SERVER['PHP_SELF']);
 <head>
 <meta charset="UTF-8">
 <link rel="stylesheet" href="/training_center/assets/css/dashboard.css">
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 <link rel="stylesheet" href="/training_center/assets/css/admin.css">
-<title>Admin Dashboard</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 
 <style>
-body {
-    margin: 0;
-    font-family: "Segoe UI", Arial, sans-serif;
-    background: #f4f6f8;
-}
-
+/* NAVBAR */
 .nav {
     display: flex;
     align-items: center;
+    justify-content: space-between;   /* <-- THIS FIXES LOGOUT POSITION */
     background: #212529;
     padding: 0 30px;
     height: 60px;
 }
 
+/* LEFT GROUP (name + menu) */
+.nav-left {
+    display: flex;
+    align-items: center;
+}
+
+/* Trainer Name */
 .nav .logo {
     color: #fff;
     font-size: 18px;
@@ -36,6 +40,7 @@ body {
     margin-right: 40px;
 }
 
+/* Menu links */
 .nav a {
     color: #f8f9fa;
     text-decoration: none;
@@ -54,49 +59,32 @@ body {
     background: rgba(255,255,255,0.25);
 }
 
-.container {
-    padding: 30px;
+/* Logout button */
+.logout-link {
+    margin-left: auto;
 }
 </style>
-<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 </head>
 
 <body>
 
 <div class="nav">
-    <div class="logo">
-    👨‍🏫 <?= htmlspecialchars($_SESSION['user_name']) ?>
-    <span style="opacity:0.7; font-size:14px;">
-        (Trainer)
-    </span>
-</div>
 
-    <a href="/training_center/admin/dashboard.php"
-       class="<?= $current === 'dashboard.php' ? 'active' : '' ?>">
-       Dashboard
+    <!-- LEFT SIDE (Trainer name + menu) -->
+    <div class="nav-left">
+        <div class="logo">👨‍🏫 <?= htmlspecialchars($trainerName) ?></div>
+
+        <a href="/training_center/trainer/dashboard.php"
+           class="<?= $current === 'dashboard.php' ? 'active' : '' ?>">
+           Dashboard
+        </a>
+    </div>
+
+    <!-- RIGHT SIDE (Logout) -->
+    <a href="/training_center/logout.php" class="logout-link">
+        <i class="fa fa-right-from-bracket"></i> Logout
     </a>
 
-    <a href="/training_center/admin/courses.php"
-       class="<?= $current === 'courses.php' ? 'active' : '' ?>">
-       Courses
-    </a>
-
-    <a href="/training_center/admin/certificates.php"
-       class="<?= $current === 'certificates.php' ? 'active' : '' ?>">
-       Certificates
-    </a>
-
-    <a href="/training_center/admin/certificate_downloads.php"
-       class="<?= $current === 'certificate_downloads.php' ? 'active' : '' ?>">
-       Downloads
-    </a>
-
-    <a href="/training_center/admin/trainers.php"
-        class="<?= $current === 'trainers.php' ? 'active' : '' ?>">
-        Trainers
-    </a>
-
-    <a href="/training_center/logout.php">Logout</a>
 </div>
 
 <div class="container">

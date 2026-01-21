@@ -1,94 +1,83 @@
 <?php
-include "../includes/student_header.php";
 include "../includes/auth.php";
 requireRole('student');
 include "../config/database.php";
 
 $student_id = $_SESSION['user_id'];
 
-$query = mysqli_query($conn, "
-    SELECT 
-        c.certificate_code,
-        c.course_id,
-        c.created_at,
-        co.title AS course_title
+// =========================
+// FETCH CERTIFICATES
+// =========================
+$q = mysqli_query($conn, "
+    SELECT c.id, c.certificate_code, c.course_id, c.issued_at, co.title
     FROM certificates c
-    JOIN courses co ON co.id = c.course_id
+    INNER JOIN courses co ON co.id = c.course_id
     WHERE c.student_id = $student_id
-    ORDER BY c.created_at DESC
+    ORDER BY c.issued_at DESC
 ");
 ?>
-
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>My Certificates</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            background: #f4f6f8;
-            padding: 40px;
-        }
-        h2 {
-            text-align: center;
-            margin-bottom: 30px;
-        }
-        table {
-            width: 90%;
-            margin: auto;
-            border-collapse: collapse;
-            background: #fff;
-        }
-        th, td {
-            padding: 12px;
-            border: 1px solid #ddd;
-            text-align: center;
-        }
-        th {
-            background: #2c7be5;
-            color: white;
-        }
-        a.button {
-            padding: 6px 12px;
-            background: #28a745;
-            color: white;
-            text-decoration: none;
-            border-radius: 4px;
-        }
-    </style>
+<meta charset="UTF-8">
+<title>My Certificates</title>
+
+<style>
+.container { padding: 40px; }
+.certificate-card {
+    background: #fff;
+    padding: 20px;
+    margin-bottom: 15px;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+}
+.certificate-title { font-size: 20px; font-weight: bold; }
+.small-text { color: #666; font-size: 14px; }
+.btn-download {
+    background: #007bff;
+    color: #fff !important;
+    padding: 8px 14px;
+    border-radius: 5px;
+    text-decoration: none;
+}
+.btn-download:hover { background: #0056c7; }
+</style>
 </head>
 
 <body>
 
-<h2>My Certificates</h2>
+<?php include "../includes/student_header.php"; ?>
 
-<?php if (mysqli_num_rows($query) === 0): ?>
-    <p style="text-align:center;">You have not earned any certificates yet.</p>
-<?php else: ?>
-<table>
-    <tr>
-        <th>Course</th>
-        <th>Certificate Code</th>
-        <th>Issued On</th>
-        <th>Action</th>
-    </tr>
+<div class="container">
+    <h2>My Certificates</h2>
+    <p>Your earned certificates are listed below.</p>
 
-    <?php while ($row = mysqli_fetch_assoc($query)): ?>
-    <tr>
-        <td><?= htmlspecialchars($row['course_title']) ?></td>
-        <td><?= htmlspecialchars($row['certificate_code']) ?></td>
-        <td><?= date("F j, Y", strtotime($row['created_at'])) ?></td>
-        <td>
-            <a href="certificate.php?id=<?= $row['id'] ?>" class="btn btn-primary">Download</a>
-        </td>
-    </tr>
-    <?php endwhile; ?>
-</table>
-<?php endif; ?>
+    <?php if (mysqli_num_rows($q) == 0): ?>
+        <p>You have not earned any certificates yet.</p>
+    <?php else: ?>
+        <?php while ($row = mysqli_fetch_assoc($q)): ?>
+        <div class="certificate-card">
+            <div class="certificate-title"><?= htmlspecialchars($row['title']) ?></div>
+
+            <div class="small-text">
+                Certificate Code: <strong><?= $row['certificate_code'] ?></strong>
+            </div>
+
+            <div class="small-text">
+                Issued At: <?= date("F j, Y", strtotime($row['issued_at'])) ?>
+            </div>
+
+            <br>
+
+            <a href="certificate.php?course_id=<?= $row['course_id'] ?>" class="btn btn-primary">
+    Download
+</a>
+
+        </div>
+        <?php endwhile; ?>
+    <?php endif; ?>
+
+</div>
 
 </body>
 </html>
-
-<?php
-include "../includes/footer.php";
-?>
