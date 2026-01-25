@@ -71,7 +71,7 @@ $progressQuery = mysqli_query($conn, "
     </div>
 
     <!-- ======= TOP CARDS ROW ======= -->
-    <div class="dashboard-cards-row">
+    <div class="dashboard-cards-row grid-3">
 
         <div class="card dashboard-card">
             <div class="icon">📘</div>

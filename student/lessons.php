@@ -1,139 +1,204 @@
 <?php
-include "../includes/student_header.php";
 include "../includes/auth.php";
 requireRole('student');
 include "../config/database.php";
 
 $student_id = $_SESSION['user_id'];
-$course_id = isset($_GET['course_id']) ? (int)$_GET['course_id'] : 0;
+$course_id = intval($_GET['course_id']);
 
-if ($course_id <= 0) {
-    die("Invalid course.");
-}
+// Fetch course
+$course = mysqli_query($conn, "SELECT * FROM courses WHERE id = $course_id");
+$courseData = mysqli_fetch_assoc($course);
 
-// -----------------------------------------
-// FETCH COURSE
-// -----------------------------------------
-$course = mysqli_fetch_assoc(mysqli_query($conn, "
-    SELECT * FROM courses WHERE id = $course_id
-"));
-
-if (!$course) {
-    die("Course not found.");
-}
-
-// -----------------------------------------
-// FETCH LESSONS
-// -----------------------------------------
+// Fetch lessons
 $lessons = mysqli_query($conn, "
-    SELECT id, title, file 
-    FROM lessons 
+    SELECT * FROM lessons 
     WHERE course_id = $course_id
+    ORDER BY id ASC
 ");
 
-// Total lessons
-$total_lessons = mysqli_num_rows($lessons);
-
-// -----------------------------------------
-// FETCH COMPLETED LESSONS
-// -----------------------------------------
-$completed_q = mysqli_query($conn, "
-    SELECT lesson_id 
-    FROM lesson_progress 
-    WHERE student_id = $student_id 
+// Fetch completed lessons
+$completed = mysqli_query($conn, "
+    SELECT lesson_id FROM lesson_progress
+    WHERE student_id = $student_id
     AND course_id = $course_id
 ");
 
-$completed_lessons = [];
-while ($row = mysqli_fetch_assoc($completed_q)) {
-    $completed_lessons[] = $row['lesson_id'];
+$completedLessons = [];
+while ($row = mysqli_fetch_assoc($completed)) {
+    $completedLessons[] = $row['lesson_id'];
 }
 
-$completed_count = count($completed_lessons);
+// Calculate progress
+$totalLessons = mysqli_num_rows($lessons);
+$done = count($completedLessons);
+$percentage = $totalLessons > 0 ? round(($done / $totalLessons) * 100) : 0;
 
-// Progress %
-$progress = ($total_lessons > 0) 
-    ? round(($completed_count / $total_lessons) * 100) 
-    : 0;
+// =========================
+// AUTO-GENERATE CERTIFICATE WHEN 100% COMPLETED
+// =========================
+
+// Check if certificate already exists
+$checkCert = mysqli_query($conn, "
+    SELECT id FROM certificates
+    WHERE student_id = $student_id 
+    AND course_id = $course_id
+    LIMIT 1
+");
+
+// If progress == 100% AND no certificate exists → create one
+if ($percentage == 100 && mysqli_num_rows($checkCert) == 0) {
+
+    // Generate unique certificate code
+    $certCode = "CERT-" . strtoupper(substr(md5(uniqid()), 0, 8));
+
+    mysqli_query($conn, "
+        INSERT INTO certificates (student_id, course_id, certificate_code, issued_at)
+        VALUES ($student_id, $course_id, '$certCode', NOW())
+    ");
+}
+
+// Reset lessons pointer for display loop
+mysqli_data_seek($lessons, 0);
 ?>
+<!DOCTYPE html>
+<html lang="en">
+<head>
 
-<!-- PAGE LAYOUT -->
-<div class="admin-container">
+<style>
+.container { 
+    padding: 40px; 
+}
 
-    <h1 class="page-title"><?= htmlspecialchars($course['title']) ?></h1>
-    <p class="muted">Your lessons for this course</p>
+.table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+    background: #fff;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+}
 
-    <!-- Progress Bar -->
-    <div style="margin:20px 0;">
-        <strong>Progress: <?= $progress ?>%</strong>
-        <div style="background:#ddd; height:12px; border-radius:6px; overflow:hidden; margin-top:6px;">
-            <div style="width:<?= $progress ?>%; height:12px; background:#2c7be5;"></div>
+.table th {
+    background: #1a1f36;
+    color: #fff;
+    padding: 12px;
+    text-align: left;
+}
+
+.table td {
+    padding: 12px;
+    border-bottom: 1px solid #eee;
+}
+
+.badge {
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 13px;
+}
+
+.bg-success {
+    background: #d4f4dd;
+    color: #1a7f37;
+}
+
+.bg-secondary {
+    background: #e7e7e7;
+    color: #333;
+}
+
+.btn {
+    padding: 8px 14px;
+    border-radius: 5px;
+    text-decoration: none;
+    color: white;
+}
+
+.btn-primary {
+    background: #1a73e8;
+}
+
+.btn-primary:hover {
+    background: #0c57b3;
+}
+
+.btn-success {
+    background: #28a745;
+}
+
+.btn-success:hover {
+    background: #1e7e34;
+}
+</style>
+
+<title><?= htmlspecialchars($courseData['title']) ?></title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+
+<body>
+
+<?php include "../includes/student_header.php"; ?>
+
+<div class="container">
+    <h2><?= htmlspecialchars($courseData['title']) ?></h2>
+
+    <p>Your lessons for this course</p>
+
+    <p><strong>Progress: <?= $percentage ?>%</strong></p>
+    <div style="background:#eee; height:10px; width:100%; border-radius:4px;">
+        <div style="
+            width:<?= $percentage ?>%; 
+            height:100%; 
+            background:#1a73e8; 
+            border-radius:4px;">
         </div>
     </div>
 
-    <div class="table-card">
-        <table class="styled-table">
-            <thead>
-                <tr>
-                    <th>Lesson</th>
-                    <th>File</th>
-                    <th>Status</th>
-                    <th>Mark Completed</th>
-                </tr>
-            </thead>
+    <br>
 
-            <tbody>
-                <?php 
-                mysqli_data_seek($lessons, 0); // Reset pointer to loop again
-                while ($lesson = mysqli_fetch_assoc($lessons)): 
-                    $lesson_id = $lesson['id'];
-                    $isDone = in_array($lesson_id, $completed_lessons);
-                ?>
-                <tr>
-                    <td><?= htmlspecialchars($lesson['title']) ?></td>
+    <table class="table">
+        <tr>
+            <th>Lesson</th>
+            <th>Status</th>
+            <th>Mark Completed</th>
+        </tr>
 
-                    <td>
-                        <a href="../uploads/lessons/<?= htmlspecialchars($lesson['file']) ?>" 
-                           class="btn btn-primary" target="_blank">
-                           Open
+        <?php while ($lesson = mysqli_fetch_assoc($lessons)): ?>
+            <tr>
+                <td><?= htmlspecialchars($lesson['title']) ?></td>
+
+                <td>
+                    <?php if (in_array($lesson['id'], $completedLessons)): ?>
+                        <span class="badge bg-success">Completed</span>
+                    <?php else: ?>
+                        <span class="badge bg-secondary">Pending</span>
+                    <?php endif; ?>
+                </td>
+
+                <td>
+                    <?php if (!in_array($lesson['id'], $completedLessons)): ?>
+                        <a class="btn btn-success" 
+                           href="complete_lesson.php?lesson_id=<?= $lesson['id'] ?>&course_id=<?= $course_id ?>">
+                           Mark Completed
                         </a>
-                    </td>
+                    <?php else: ?>
+                        —
+                    <?php endif; ?>
+                </td>
+            </tr>
+        <?php endwhile; ?>
+    </table>
 
-                    <td>
-                        <?php if ($isDone): ?>
-                            <span class="status active">Completed</span>
-                        <?php else: ?>
-                            <span class="status disabled">Pending</span>
-                        <?php endif; ?>
-                    </td>
+    <br>
 
-                    <td>
-                        <?php if (!$isDone): ?>
-                            <a href="complete_lesson.php?course_id=<?= $course_id ?>&lesson_id=<?= $lesson_id ?>"
-                               class="btn btn-success">
-                               Mark Completed
-                            </a>
-                        <?php else: ?>
-                            —
-                        <?php endif; ?>
-                    </td>
-                </tr>
-                <?php endwhile; ?>
-            </tbody>
-        </table>
-    </div>
-
-    <!-- SHOW CERTIFICATE BUTTON IF 100% DONE -->
-    <?php if ($progress == 100): ?>
-        <div style="text-align:center; margin-top:30px;">
-            <a href="certificate.php?course_id=<?= $course_id ?>" 
-               class="btn btn-primary"
-               style="padding:14px 28px; font-size:18px;">
-               🎉 Download Certificate
-            </a>
-        </div>
+    <?php if ($percentage == 100): ?>
+        <a href="certificate.php?course_id=<?= $course_id ?>" class="btn btn-primary">
+            Download Certificate
+        </a>
     <?php endif; ?>
 
 </div>
 
-<?php include "../includes/footer.php"; ?>
+</body>
+</html>
