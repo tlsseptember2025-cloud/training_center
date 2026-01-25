@@ -146,14 +146,8 @@ mysqli_data_seek($lessons, 0);
     <p>Your lessons for this course</p>
 
     <p><strong>Progress: <?= $percentage ?>%</strong></p>
-    <div style="background:#eee; height:10px; width:100%; border-radius:4px;">
-        <div style="
-            width:<?= $percentage ?>%; 
-            height:100%; 
-            background:#1a73e8; 
-            border-radius:4px;">
-        </div>
-    </div>
+
+    <div style="width:<?= $percentage ?>%; height:100%; background:#1a73e8; border-radius:4px;"></div>
 
     <br>
 

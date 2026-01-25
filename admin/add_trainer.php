@@ -26,7 +26,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 }
 ?>
 
-<div class="admin-container">
+<div class="form-group">
 
     <div class="page-header">
         <h1 class="page-title">Add Trainer</h1>
