@@ -2,6 +2,8 @@
 session_start();
 include "config/database.php";
 
+include __DIR__ . "/config/database.php";
+
 // If already logged in → redirect based on role
 if (isset($_SESSION['role'])) {
     if ($_SESSION['role'] === 'admin') {
@@ -59,7 +61,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $error = "Invalid email or password.";
     }
 }
-
 include "includes/public_header.php";
 ?>
 
