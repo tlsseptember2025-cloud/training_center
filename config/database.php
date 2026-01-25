@@ -1,4 +1,5 @@
 <?php
+//important!
 $conn = mysqli_connect("localhost", "root", "", "training_center_db");
 
 if (!$conn) {
