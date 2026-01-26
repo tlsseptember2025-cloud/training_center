@@ -11,7 +11,8 @@ $q = mysqli_query($conn, "
         id,
         course_title,
         certificate_code,
-        issued_at
+        issued_at,
+        expires_at
     FROM certificates
     WHERE student_id = $student_id
     ORDER BY issued_at DESC
@@ -105,6 +106,7 @@ $q = mysqli_query($conn, "
             <th>Course</th>
             <th>Certificate Code</th>
             <th>Issued At</th>
+            <th>Expired At</th>
             <th>Download</th>
         </tr>
     </thead>
@@ -115,13 +117,14 @@ $q = mysqli_query($conn, "
             <td><?= htmlspecialchars($row['course_title']) ?></td>
             <td><strong><?= $row['certificate_code'] ?></strong></td>
             <td><?= date("F j, Y", strtotime($row['issued_at'])) ?></td>
+            <td><?= date("F j, Y", strtotime($row['expires_at'])) ?></td>
             <td>
-    <a href="certificate.php?id=<?= $row['id'] ?>" 
-       class="btn-download"
-       target="_blank">
-       Download
-    </a>
-</td>
+                <a href="certificate.php?id=<?= $row['id'] ?>" 
+                class="btn-download"
+                target="_blank">
+                Download
+                </a>
+            </td>
         </tr>
     <?php endwhile; ?>
     </tbody>

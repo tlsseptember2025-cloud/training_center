@@ -50,6 +50,20 @@ $cert = mysqli_fetch_assoc(mysqli_query($conn, "
     SELECT * FROM certificates WHERE $where LIMIT 1
 "));
 
+
+if ($cert) {
+
+    // EXPIRE CHECK
+    if (!empty($cert['expires_at']) && strtotime($cert['expires_at']) < time()) {
+        die("This certificate has expired and cannot be downloaded.");
+    }
+
+    $certCode = $cert['certificate_code'];
+
+} else {
+    die("Certificate not found. Please complete the course.");
+}
+
 if (!$cert) {
     die("Certificate not found.");
 }
@@ -60,6 +74,7 @@ $course_title  = htmlspecialchars($cert['course_title']);
 $trainer_name  = htmlspecialchars($cert['trainer_name']);
 $certCode      = $cert['certificate_code'];
 $date          = date("F j, Y", strtotime($cert['issued_at']));
+$expires_at = date("F j, Y", strtotime($cert['expires_at']));
 
 // ===========================
 // ASSET PATHS
@@ -85,7 +100,7 @@ body { margin:0; font-family: Georgia, serif; }
 .background { position:absolute; width:100%; height:100%; }
 .logo { position:absolute; top:160px; left:480px; width:240px; }
 .content { position:absolute; top:220px; width:100%; text-align:center; }
-.signature { position:absolute; bottom:140px; left:50%; transform:translateX(-50%); width:450px; }
+.signature { position:absolute; bottom:250px; right: 60px;width: 480px; }
 .stamp { position:absolute; bottom:180px; left:80px; width:300px; }
 
 h1 { font-size:42px; }
@@ -98,15 +113,16 @@ p  { font-size:18px; }
 <div class='page'>
     <img src='$template' class='background'>
     <img src='$logo' class='logo'>
-
+    
     <div class='content'>
         <h1>Certificate of Completion</h1>
+        <p><strong>Issued On: $date</strong></p>
         <p>This certifies that</p>
         <h2>$student_name</h2>
         <p>has successfully completed</p>
         <h2><em>$course_title</em></h2>
         <p>Instructor: $trainer_name</p>
-        <p>Issued on $date</p>
+        <p style='color:red;'><strong>Valid Until: $expires_at</strong></p>
         <p><strong>$certCode</strong></p>
     </div>
 

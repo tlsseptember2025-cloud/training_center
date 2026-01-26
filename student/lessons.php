@@ -87,12 +87,16 @@ if ($percentage == 100 && mysqli_num_rows($certExists) == 0) {
         "No Trainer Assigned";
 
     // INSERT full certificate record
-    mysqli_query($conn, "
-        INSERT INTO certificates 
-            (student_id, student_name, course_id, course_title, trainer_name, certificate_code, issued_at)
-        VALUES 
-            ($student_id, '$student_name', $course_id, '$course_title', '$trainer_name', '$certCode', NOW())
-    ") or die("Insert Error: " . mysqli_error($conn));
+    $issued_at  = date("Y-m-d");
+$expires_at = date("Y-m-d", strtotime("+2 years"));
+
+mysqli_query($conn, "
+    INSERT INTO certificates 
+        (student_id, student_name, course_id, course_title, trainer_name, certificate_code, issued_at, expires_at)
+    VALUES 
+        ($student_id, '$student_name', $course_id, '$course_title', '$trainer_name', '$certCode', '$issued_at', '$expires_at')
+") or die('Insert Error: ' . mysqli_error($conn));
+
 }
 
 // Reset lessons pointer for table display
