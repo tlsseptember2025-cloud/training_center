@@ -2,6 +2,24 @@
 include "includes/public_header.php";
 ?>
 
+
+<style>
+    .features-row {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 25px;
+    margin-top: 40px;
+}
+
+.feature-box {
+    background: #ffffff;
+    padding: 25px;
+    border-radius: 10px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.06);
+}
+
+</style>
+
 <!-- HERO SECTION -->
 <div style="text-align:center; margin-top:60px; padding:0 20px;">
     <h1 style="font-size:42px;">Welcome to Training Center</h1>
@@ -83,20 +101,25 @@ include "includes/public_header.php";
 <!-- FEATURES -->
 <div style="display:flex; justify-content:space-between; gap:40px; padding:0 20px; flex-wrap:wrap;">
 
-    <div style="flex:1; min-width:240px; background:white; padding:30px; border-radius:8px;">
-        <h3>📚 Structured Courses</h3>
+    <div class="features-row">
+
+    <div class="feature-box">
+        <h4>📚 Structured Courses</h4>
         <p>Learn through organized lessons created by professional trainers.</p>
     </div>
 
-    <div style="flex:1; min-width:240px; background:white; padding:30px; border-radius:8px;">
-        <h3>📊 Track Progress</h3>
+    <div class="feature-box">
+        <h4>📊 Track Progress</h4>
         <p>See your course progress and completed lessons in real time.</p>
     </div>
 
-    <div style="flex:1; min-width:240px; background:white; padding:30px; border-radius:8px;">
-        <h3>🎓 Verified Certificates</h3>
+    <div class="feature-box">
+        <h4>🏅 Verified Certificates</h4>
         <p>Earn certificates with QR verification you can share anywhere.</p>
     </div>
+
+</div>
+
 
 </div>
 

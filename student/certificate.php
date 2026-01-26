@@ -1,9 +1,5 @@
 <?php
-// ===========================
-// AUTH + DB
-// ===========================
 include "../includes/auth.php";
-requireRole('student');
 include "../config/database.php";
 
 require "../lib/dompdf/autoload.inc.php";
@@ -11,78 +7,59 @@ require "../lib/dompdf/autoload.inc.php";
 use Dompdf\Dompdf;
 use Dompdf\Options;
 
-// ===========================
-// INPUT
-// ===========================
-$student_id = $_SESSION['user_id'];
+
+// Allow BOTH student + admin
+if ($_SESSION['role'] !== 'student' && $_SESSION['role'] !== 'admin') {
+    die("Unauthorized.");
+}
+
+$logged_in_student = $_SESSION['user_id'];
+$isAdmin = ($_SESSION['role'] === 'admin');
+
+// Accept certificate id OR course_id
+$cert_id   = isset($_GET['id']) ? intval($_GET['id']) : 0;
 $course_id = isset($_GET['course_id']) ? intval($_GET['course_id']) : 0;
 
-if ($course_id <= 0) {
-    die("Invalid course.");
-}
+// If admin is downloading, allow override student
+$target_student_id = isset($_GET['student_id']) ? intval($_GET['student_id']) : $logged_in_student;
 
-// ===========================
-// VERIFY COURSE COMPLETION
-// ===========================
-$q = mysqli_query($conn, "
-    SELECT 
-        (SELECT COUNT(*) FROM lessons WHERE course_id = $course_id) AS total_lessons,
-        (SELECT COUNT(*) FROM lesson_progress 
-         WHERE student_id = $student_id AND course_id = $course_id) AS completed_lessons
-");
-
-$prog = mysqli_fetch_assoc($q);
-
-if ($prog['total_lessons'] == 0 || $prog['total_lessons'] != $prog['completed_lessons']) {
-    die("Certificate not available until course is completed.");
-}
-
-// ===========================
-// FETCH STUDENT + COURSE
-// ===========================
-$student = mysqli_fetch_assoc(mysqli_query($conn, "
-    SELECT name FROM users WHERE id = $student_id
-"));
-
-$course = mysqli_fetch_assoc(mysqli_query($conn, "
-    SELECT title FROM courses WHERE id = $course_id
-"));
-
-// ===========================
-// GENERATE CERT CODE IF NEW
-// ===========================
-function generateCertCode() {
-    return "CERT-" . strtoupper(bin2hex(random_bytes(4)));
-}
-
-$certRow = mysqli_query($conn, "
-    SELECT id, certificate_code 
-    FROM certificates 
-    WHERE student_id = $student_id AND course_id = $course_id
-");
-
-if (mysqli_num_rows($certRow) > 0) {
-    $cert = mysqli_fetch_assoc($certRow);
-    $certCode = $cert["certificate_code"];
-} else {
-    $certCode = generateCertCode();
-
-    $insert = mysqli_query($conn, "
-        INSERT INTO certificates (certificate_code, student_id, course_id, issued_at)
-        VALUES ('$certCode', $student_id, $course_id, NOW())
-    ");
-
-    if (!$insert) {
-        die("ERROR inserting certificate: " . mysqli_error($conn));
+// Build WHERE conditions:
+if ($cert_id > 0) {
+    // Admin can download any id
+    if ($isAdmin) {
+        $where = "id = $cert_id";
+    } else {
+        $where = "id = $cert_id AND student_id = $logged_in_student";
     }
+
+} elseif ($course_id > 0) {
+    // Student must match their own id
+    if (!$isAdmin) {
+        $where = "course_id = $course_id AND student_id = $logged_in_student";
+    } else {
+        // Admin requires student_id to know whose certificate
+        $where = "course_id = $course_id AND student_id = $target_student_id";
+    }
+
+} else {
+    die("Invalid request.");
 }
 
-// ===========================
-// SAFE OUTPUT
-// ===========================
-$name  = htmlspecialchars($student["name"]);
-$title = htmlspecialchars($course["title"]);
-$date  = date("F j, Y");
+// Fetch certificate record
+$cert = mysqli_fetch_assoc(mysqli_query($conn, "
+    SELECT * FROM certificates WHERE $where LIMIT 1
+"));
+
+if (!$cert) {
+    die("Certificate not found.");
+}
+
+// Load snapshot data
+$student_name  = htmlspecialchars($cert['student_name']);
+$course_title  = htmlspecialchars($cert['course_title']);
+$trainer_name  = htmlspecialchars($cert['trainer_name']);
+$certCode      = $cert['certificate_code'];
+$date          = date("F j, Y", strtotime($cert['issued_at']));
 
 // ===========================
 // ASSET PATHS
@@ -90,32 +67,30 @@ $date  = date("F j, Y");
 $assetDir = realpath(__DIR__ . '/../assets/certificate');
 $assetDir = str_replace("\\", "/", $assetDir);
 
-$template  = $assetDir . "/template.png";
-$logo      = $assetDir . "/logo.png";
-$signature = $assetDir . "/signature.png";
-$stamp     = $assetDir . "/stamp.png";
+$template  = "$assetDir/template.png";
+$logo      = "$assetDir/logo.png";
+$signature = "$assetDir/signature.png";
+$stamp     = "$assetDir/stamp.png";
 
 // ===========================
-// CERTIFICATE HTML
+// PDF TEMPLATE
 // ===========================
 $html = "
 <html>
 <head>
 <style>
 @page { size: A4 landscape; margin: 0; }
-body { margin: 0; font-family: Georgia, serif; }
-
-.page { position: relative; width: 100%; height: 100%; }
-.background { position:absolute; width:100%; height:100%; top:0; left:0; }
+body { margin:0; font-family: Georgia, serif; }
+.page { position:relative; width:100%; height:100%; }
+.background { position:absolute; width:100%; height:100%; }
 .logo { position:absolute; top:160px; left:480px; width:240px; }
-
 .content { position:absolute; top:220px; width:100%; text-align:center; }
 .signature { position:absolute; bottom:140px; left:50%; transform:translateX(-50%); width:450px; }
 .stamp { position:absolute; bottom:180px; left:80px; width:300px; }
 
-h1 { font-size:42px; margin-bottom:20px; }
-h2 { font-size:32px; margin:10px 0; }
-p { font-size:18px; margin:6px 0; }
+h1 { font-size:42px; }
+h2 { font-size:32px; }
+p  { font-size:18px; }
 </style>
 </head>
 
@@ -127,9 +102,10 @@ p { font-size:18px; margin:6px 0; }
     <div class='content'>
         <h1>Certificate of Completion</h1>
         <p>This certifies that</p>
-        <h2>$name</h2>
+        <h2>$student_name</h2>
         <p>has successfully completed</p>
-        <h2><em>$title</em></h2>
+        <h2><em>$course_title</em></h2>
+        <p>Instructor: $trainer_name</p>
         <p>Issued on $date</p>
         <p><strong>$certCode</strong></p>
     </div>
@@ -141,9 +117,6 @@ p { font-size:18px; margin:6px 0; }
 </html>
 ";
 
-// ===========================
-// DOMPDF SETTINGS
-// ===========================
 $options = new Options();
 $options->set("isRemoteEnabled", true);
 $options->set("chroot", realpath(__DIR__ . "/.."));
@@ -153,11 +126,8 @@ $dompdf->loadHtml($html);
 $dompdf->setPaper("A4", "landscape");
 $dompdf->render();
 
-if (ob_get_length()) ob_end_clean();
+if (ob_get_length()) { ob_end_clean(); }
 
-// ===========================
-// STREAM PDF
-// ===========================
 $dompdf->stream("certificate-$certCode.pdf", ["Attachment" => true]);
 exit;
 ?>

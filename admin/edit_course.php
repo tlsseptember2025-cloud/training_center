@@ -33,6 +33,10 @@ if (isset($_POST['update_course'])) {
 <div class="form-wrapper">
     <h2>Edit Course</h2>
 
+    <a href="courses.php" class="back-btn">
+        <i class="fa fa-arrow-left"></i> Back to Courses
+    </a>
+
     <?= $message ?>
 
     <form method="POST">

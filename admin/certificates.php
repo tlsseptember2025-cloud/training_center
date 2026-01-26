@@ -60,6 +60,10 @@ $query = mysqli_query($conn, "
 
 <h2>Issued Certificates</h2>
 
+<a href="dashboard.php" class="back-btn">
+        <i class="fa fa-arrow-left"></i> Back to Dashboard
+    </a>
+
 <?php if (mysqli_num_rows($query) === 0): ?>
     <p style="text-align:center;">No certificates issued yet.</p>
 <?php else: ?>

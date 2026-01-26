@@ -32,13 +32,13 @@ $enrollments = mysqli_query($conn, "
 ");
 
 // =======================
-// FETCH CERTIFICATES
+// FETCH CERTIFICATES (NO DEPENDENCE ON COURSE TABLE)
 // =======================
 $certificates = mysqli_query($conn, "
-    SELECT c.id AS course_id, c.title, cert.certificate_code
-    FROM certificates cert
-    JOIN courses c ON c.id = cert.course_id
-    WHERE cert.student_id = $student_id
+    SELECT id, course_title, certificate_code, issued_at
+    FROM certificates
+    WHERE student_id = $student_id
+    ORDER BY issued_at DESC
 ");
 ?>
 
@@ -60,6 +60,7 @@ $certificates = mysqli_query($conn, "
     <!-- BASIC INFO + ENROLLMENTS -->
     <div class="grid-2">
 
+        <!-- BASIC INFO -->
         <div class="card">
             <h3>Basic Information</h3>
             <p><strong>Name:</strong> <?= htmlspecialchars($student['name']) ?></p>
@@ -72,6 +73,7 @@ $certificates = mysqli_query($conn, "
             </p>
         </div>
 
+        <!-- ENROLLMENTS -->
         <div class="card">
             <h3>Enrolled Courses</h3>
 
@@ -98,34 +100,49 @@ $certificates = mysqli_query($conn, "
                     <tr>
                         <th>Course</th>
                         <th>Certificate Code</th>
-                        <th style="width:220px;">Actions</th>
+                        <th>Issued</th>
+                        <th style="width:240px;">Actions</th>
                     </tr>
                 </thead>
                 <tbody>
                     <?php while ($c = mysqli_fetch_assoc($certificates)): ?>
                         <tr>
-                            <td><?= htmlspecialchars($c['title']) ?></td>
-                            <td><?= $c['certificate_code'] ?></td>
+                            <td><?= htmlspecialchars($c['course_title']) ?></td>
+
+                            <td>
+                                <strong><?= $c['certificate_code'] ?></strong>
+                            </td>
+
+                            <td>
+                                <?= date("F j, Y", strtotime($c['issued_at'])) ?>
+                            </td>
+
                             <td class="actions">
-                                <a href="../student/certificate.php?course_id=<?= $c['course_id'] ?>&student_id=<?= $student_id ?>"
-                                   target="_blank"
-                                   class="btn btn-primary">
+
+                                <!-- DOWNLOAD CERTIFICATE USING CERTIFICATE ID -->
+                                <a href="../student/certificate.php?id=<?= $c['id'] ?>&student_id=<?= $student_id ?>"
+                                   class="btn btn-primary"
+                                   target="_blank">
                                     <i class="fa fa-download"></i> Download
                                 </a>
 
+                                <!-- VERIFY CERTIFICATE -->
                                 <a href="../verify.php?code=<?= $c['certificate_code'] ?>"
-                                   target="_blank"
-                                   class="btn btn-secondary">
+                                   class="btn btn-secondary"
+                                   target="_blank">
                                     <i class="fa fa-check"></i> Verify
                                 </a>
+
                             </td>
                         </tr>
                     <?php endwhile; ?>
                 </tbody>
             </table>
+
         <?php else: ?>
             <p class="muted">No certificates issued</p>
         <?php endif; ?>
+
     </div>
 
 </div>

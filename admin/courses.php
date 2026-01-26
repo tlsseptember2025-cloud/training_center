@@ -49,12 +49,9 @@ $result = mysqli_query($conn, "SELECT * FROM courses");
                             Edit
                         </a>
 
-                        <a href="delete_course.php?id=<?= $course['id'] ?>"
-                           class="btn-delete"
-                           onclick="return confirm('Delete this course?')">
-                           Delete
-                        </a>
+                        <a href="#" class="delete-btn" data-id="<?= $course['id'] ?>" style="color:red;">Delete</a>
                     </td>
+
                 </tr>
             <?php endwhile; ?>
             </tbody>
@@ -62,5 +59,71 @@ $result = mysqli_query($conn, "SELECT * FROM courses");
     </div>
 
 </div>
+
+<!-- Beautiful Delete Confirmation Modal -->
+<div id="deleteModal" class="custom-modal hidden">
+    <div class="custom-modal-content">
+        <h3>Confirm Delete</h3>
+        <p>Are you sure you want to delete this course?</p>
+
+        <div class="modal-actions">
+            <button class="btn btn-danger" id="confirmDelete">Delete</button>
+            <button class="btn btn-secondary" id="cancelDelete">Cancel</button>
+        </div>
+    </div>
+</div>
+
+<style>
+.custom-modal {
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    background: rgba(0,0,0,0.4);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 9999;
+}
+.hidden { display: none; }
+
+.custom-modal-content {
+    background: #fff;
+    padding: 25px;
+    border-radius: 10px;
+    width: 350px;
+    text-align: center;
+    box-shadow: 0 5px 25px rgba(0,0,0,0.15);
+}
+
+.modal-actions {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 20px;
+}
+</style>
+
+<script>
+let deleteId = null;
+
+document.querySelectorAll(".delete-btn").forEach(btn => {
+    btn.addEventListener("click", function(e) {
+        e.preventDefault();
+        deleteId = this.dataset.id;
+        document.getElementById("deleteModal").classList.remove("hidden");
+    });
+});
+
+document.getElementById("cancelDelete").onclick = function() {
+    document.getElementById("deleteModal").classList.add("hidden");
+    deleteId = null;
+};
+
+document.getElementById("confirmDelete").onclick = function() {
+    if (deleteId) {
+        window.location.href = "delete_course.php?id=" + deleteId;
+    }
+};
+</script>
+
 
 <?php include "../includes/footer.php"; ?>
