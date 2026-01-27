@@ -9,8 +9,38 @@ $course_id  = intval($_GET['course_id']);
 // =========================
 // FETCH COURSE
 // =========================
-$course = mysqli_query($conn, "SELECT * FROM courses WHERE id = $course_id");
-$courseData = mysqli_fetch_assoc($course);
+
+$course = mysqli_fetch_assoc(mysqli_query($conn, "
+    SELECT * FROM courses WHERE id = $course_id
+"));
+
+// Prevent access to inactive courses
+if ($course['is_active'] == 0) {
+    echo "<div style='
+        width: 60%;
+        margin: 100px auto;
+        padding: 25px;
+        background: #fff3f3;
+        color: #b30000;
+        border: 1px solid #ffb3b3;
+        border-radius: 8px;
+        text-align: center;
+        font-size: 20px;
+        box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+    '>
+        <strong>This course is currently inactive.</strong><br>
+        Lessons are not accessible at the moment.<br><br>
+        <a href='courses.php' style='
+            display:inline-block;
+            padding:10px 18px;
+            background:#007bff;
+            color:white;
+            text-decoration:none;
+            border-radius:5px;
+        '>Return to Courses</a>
+    </div>";
+    exit;
+}
 
 if (!$courseData) {
     die("Course not found.");

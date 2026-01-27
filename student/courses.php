@@ -98,7 +98,6 @@ $available = mysqli_query($conn, "
                     <td><?= htmlspecialchars($row['description']) ?></td>
                     <td>
                         <a href="enroll.php?course_id=<?= $row['id'] ?>" class="btn btn-primary">Enroll</a>
-
                     </td>
                 </tr>
             <?php endwhile; ?>

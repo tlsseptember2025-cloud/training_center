@@ -4,16 +4,11 @@ include "../includes/auth.php";
 requireRole('admin');
 include "../config/database.php";
 
+// Fetch certificates WITHOUT JOIN (deleted courses still show)
 $query = mysqli_query($conn, "
-    SELECT 
-        c.certificate_code,
-        c.created_at,
-        u.name AS student_name,
-        co.title AS course_title
-    FROM certificates c
-    JOIN users u ON u.id = c.student_id
-    JOIN courses co ON co.id = c.course_id
-    ORDER BY c.created_at DESC
+    SELECT *
+    FROM certificates
+    ORDER BY issued_at DESC
 ");
 ?>
 
@@ -53,6 +48,13 @@ $query = mysqli_query($conn, "
             text-decoration: none;
             border-radius: 4px;
         }
+        .badge {
+            padding: 6px 10px;
+            border-radius: 4px;
+            color: white;
+        }
+        .bg-danger { background: #dc3545; }
+        .bg-success { background: #28a745; }
     </style>
 </head>
 
@@ -61,8 +63,8 @@ $query = mysqli_query($conn, "
 <h2>Issued Certificates</h2>
 
 <a href="dashboard.php" class="back-btn">
-        <i class="fa fa-arrow-left"></i> Back to Dashboard
-    </a>
+    <i class="fa fa-arrow-left"></i> Back to Dashboard
+</a>
 
 <?php if (mysqli_num_rows($query) === 0): ?>
     <p style="text-align:center;">No certificates issued yet.</p>
@@ -73,15 +75,49 @@ $query = mysqli_query($conn, "
         <th>Course</th>
         <th>Certificate Code</th>
         <th>Issued On</th>
+        <th>Expiry</th>
+        <th>Status</th>
         <th>Verify</th>
     </tr>
 
     <?php while ($row = mysqli_fetch_assoc($query)): ?>
+
+    <?php
+        // Safe values
+        $student = htmlspecialchars($row['student_name']);
+        $course  = !empty($row['course_title']) ? htmlspecialchars($row['course_title']) : "<i>Deleted Course</i>";
+
+        // Handle dates safely
+        $issued_at = !empty($row['issued_at']) ? date("F j, Y", strtotime($row['issued_at'])) : "—";
+        $expires_at = !empty($row['expires_at']) ? date("F j, Y", strtotime($row['expires_at'])) : "—";
+
+        // Status (expired / active / unknown)
+        if (empty($row['expires_at'])) {
+            $status = "—";
+            $badge = "";
+        } else {
+            $isExpired = strtotime($row['expires_at']) < time();
+            $status = $isExpired ? "Expired" : "Active";
+            $badge = $isExpired ? "bg-danger" : "bg-success";
+        }
+    ?>
+
     <tr>
-        <td><?= htmlspecialchars($row['student_name']) ?></td>
-        <td><?= htmlspecialchars($row['course_title']) ?></td>
+        <td><?= $student ?></td>
+        <td><?= $course ?></td>
         <td><?= htmlspecialchars($row['certificate_code']) ?></td>
-        <td><?= date("F j, Y", strtotime($row['created_at'])) ?></td>
+
+        <td><?= $issued_at ?></td>
+        <td><?= $expires_at ?></td>
+
+        <td>
+            <?php if ($status !== "—"): ?>
+                <span class="badge <?= $badge ?>"><?= $status ?></span>
+            <?php else: ?>
+                —
+            <?php endif; ?>
+        </td>
+
         <td>
             <a class="verify"
                href="../verify.php?code=<?= urlencode($row['certificate_code']) ?>"
@@ -90,6 +126,7 @@ $query = mysqli_query($conn, "
             </a>
         </td>
     </tr>
+
     <?php endwhile; ?>
 </table>
 <?php endif; ?>

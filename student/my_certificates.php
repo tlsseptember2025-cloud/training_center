@@ -82,6 +82,16 @@ $q = mysqli_query($conn, "
 .btn-download:hover {
     background: #0c57b3;
 }
+
+.badge {
+    padding: 6px 12px;
+    border-radius: 20px;
+    color: #fff;
+    font-size: 13px;
+}
+.bg-success { background:#28a745; }
+.bg-danger { background:#dc3545; }
+
 </style>
 </head>
 
@@ -107,17 +117,24 @@ $q = mysqli_query($conn, "
             <th>Certificate Code</th>
             <th>Issued At</th>
             <th>Expired At</th>
+            <th>Status</th>
             <th>Download</th>
         </tr>
     </thead>
 
     <tbody>
     <?php while ($row = mysqli_fetch_assoc($q)): ?>
+        <?php
+            $isExpired = strtotime($row['expires_at']) < time();
+            $statusText = $isExpired ? "Expired" : "Active";
+            $statusClass = $isExpired ? "bg-danger" : "bg-success";
+        ?>
         <tr>
             <td><?= htmlspecialchars($row['course_title']) ?></td>
             <td><strong><?= $row['certificate_code'] ?></strong></td>
             <td><?= date("F j, Y", strtotime($row['issued_at'])) ?></td>
             <td><?= date("F j, Y", strtotime($row['expires_at'])) ?></td>
+            <td><span class="badge <?= $statusClass ?>"><?= $statusText ?></span></td>
             <td>
                 <a href="certificate.php?id=<?= $row['id'] ?>" 
                 class="btn-download"
