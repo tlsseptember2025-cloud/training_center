@@ -13,7 +13,8 @@ $q = mysqli_query($conn, "
         student_name,
         course_title,
         trainer_name,
-        issued_at
+        issued_at,
+        expires_at
     FROM certificates
     WHERE certificate_code = '$code'
     LIMIT 1
@@ -24,6 +25,11 @@ if (mysqli_num_rows($q) == 0) {
 }
 
 $data = mysqli_fetch_assoc($q);
+
+// Expiry check
+$isExpired = (!empty($data['expires_at']) && strtotime($data['expires_at']) < time());
+$status = $isExpired ? "Expired" : "Active";
+$statusColor = $isExpired ? "red" : "green";
 ?>
 <!DOCTYPE html>
 <html>
@@ -49,11 +55,21 @@ body {
 
 <div class="box">
     <h2>Certificate Verified ✔</h2>
+
     <p><strong>Certificate Code:</strong> <?= $data['certificate_code'] ?></p>
     <p><strong>Student:</strong> <?= $data['student_name'] ?></p>
     <p><strong>Course:</strong> <?= $data['course_title'] ?></p>
     <p><strong>Trainer:</strong> <?= $data['trainer_name'] ?></p>
     <p><strong>Issued On:</strong> <?= date("F j, Y", strtotime($data['issued_at'])) ?></p>
+
+    <p><strong>Valid Until:</strong> <?= date("F j, Y", strtotime($data['expires_at'])) ?></p>
+
+    <p>
+        <strong>Status:</strong> 
+        <span style="color: <?= $statusColor ?>; font-weight:bold;">
+            <?= $status ?>
+        </span>
+    </p>
 </div>
 
 </body>
