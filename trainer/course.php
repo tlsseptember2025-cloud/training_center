@@ -146,6 +146,8 @@ h2 { margin-bottom: 10px; }
 
                         <a href="attendance.php?lesson_id=<?= $l['id'] ?>&course_id=<?= $course_id ?>" 
                         class="btn btn-success btn-sm">Take Attendance</a>
+                        <a href="attendance_history.php?lesson_id=<?= $l['id'] ?>&course_id=<?= $course_id ?>" 
+                        class="btn btn-danger btn-sm">Attendance History</a>
                     </td>
                 </tr>
             <?php endwhile; ?>

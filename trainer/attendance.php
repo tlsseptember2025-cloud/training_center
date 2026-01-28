@@ -4,6 +4,7 @@ requireRole('trainer');
 include "../config/database.php";
 include "../includes/trainer_header.php";
 
+date_default_timezone_set('Asia/Dubai'); 
 $trainer_id = $_SESSION['user_id'];
 $lesson_id = intval($_GET['lesson_id'] ?? 0);
 
@@ -11,7 +12,7 @@ if ($lesson_id <= 0) {
     die("Invalid lesson.");
 }
 
-// FETCH LESSON + COURSE + VERIFY TRAINER
+// FETCH LESSON
 $lesson = mysqli_fetch_assoc(mysqli_query($conn, "
     SELECT l.*, c.title AS course_title
     FROM lessons l
@@ -26,7 +27,7 @@ if (!$lesson) {
 
 $course_id = $lesson['course_id'];
 
-// FETCH STUDENTS ENROLLED IN THIS COURSE
+// FETCH STUDENTS
 $students = mysqli_query($conn, "
     SELECT u.id, u.name
     FROM enrollments e
@@ -34,20 +35,26 @@ $students = mysqli_query($conn, "
     WHERE e.course_id = $course_id
 ");
 
+$today = date("Y-m-d");
+$today2 = date("F j, Y");
+
 // SAVE ATTENDANCE
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+
+    $now = date("Y-m-d H:i:s");
+
     foreach ($_POST['status'] as $student_id => $status) {
         $student_id = intval($student_id);
         $status = mysqli_real_escape_string($conn, $status);
 
         mysqli_query($conn, "
-            INSERT INTO attendance (course_id, lesson_id, student_id, trainer_id, status)
-            VALUES ($course_id, $lesson_id, $student_id, $trainer_id, '$status')
-            ON DUPLICATE KEY UPDATE status = '$status', marked_at = CURRENT_TIMESTAMP
+            REPLACE INTO attendance (course_id, lesson_id, student_id, trainer_id, status, attendance_date, marked_at)
+            VALUES ($course_id, $lesson_id, $student_id, $trainer_id, '$status', '$today', '$now')
         ");
     }
 
-    echo "<script>alert('Attendance Saved'); window.location='course.php?id=$course_id';</script>";
+    // Redirect and trigger SweetAlert
+    header("Location: attendance.php?lesson_id=$lesson_id&course_id=$course_id&saved=1");
     exit;
 }
 ?>
@@ -55,6 +62,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <html>
 <head>
 <title>Attendance - <?= htmlspecialchars($lesson['course_title']) ?></title>
+
+<!-- SWEETALERT2 -->
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
 <style>
 .page-container {
@@ -95,10 +105,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     color: white;
     border: none;
 }
-
-select {
-    padding: 6px;
-}
 </style>
 
 </head>
@@ -107,9 +113,9 @@ select {
 <div class="page-container">
 
     <h2>Attendance - <?= htmlspecialchars($lesson['course_title']) ?></h2>
-    <a href="course.php?id=<?= $_GET['course_id'] ?>">
-    ← Back to Lessons
-</a>
+
+    <a href="course.php?id=<?= $_GET['course_id'] ?>">← Back to Lessons</a>
+
     <p><strong>Lesson:</strong> <?= htmlspecialchars($lesson['title']) ?></p>
 
     <form method="post">
@@ -119,6 +125,7 @@ select {
                 <tr>
                     <th>Student</th>
                     <th>Status</th>
+                    <th>Date</th>
                 </tr>
             </thead>
             <tbody>
@@ -134,6 +141,7 @@ select {
                             <option value="excused">Excused</option>
                         </select>
                     </td>
+                    <td><?= $today2 ?></td>
                 </tr>
             <?php endwhile; ?>
 
@@ -146,6 +154,22 @@ select {
     </form>
 
 </div>
+
+<?php if (isset($_GET['saved'])): ?>
+<script>
+Swal.fire({
+    title: "Attendance Saved!",
+    text: "The attendance has been successfully recorded.",
+    icon: "success",
+    confirmButtonColor: "#3085d6",
+    timer: 5000,
+    timerProgressBar: true,
+    showConfirmButton: false
+}).then(() => {
+    window.location = "course.php?id=<?= $course_id ?>";
+});
+</script>
+<?php endif; ?>
 
 </body>
 </html>

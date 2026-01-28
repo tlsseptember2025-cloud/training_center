@@ -1,4 +1,3 @@
-
 <?php
 include "../includes/student_header.php";
 include "../includes/auth.php";
@@ -98,7 +97,7 @@ $available = mysqli_query($conn, "
                     <td><?= htmlspecialchars($row['description']) ?></td>
                     <td>
                         <?php if (htmlspecialchars($row['is_active'])): ?>
-                            <a href="enroll.php?course_id=<?= $id ?>" class="btn btn-primary">Enroll</a>
+                            <a href="enroll.php?course_id=<?= $row['id'] ?>" class="btn btn-primary">Enroll</a>
                         <?php else: ?>
                           <span 
                             title="This course is inactive and cannot be enrolled into." 

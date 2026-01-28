@@ -42,7 +42,7 @@ if ($course['is_active'] == 0) {
     exit;
 }
 
-if (!$courseData) {
+if (!$course) {
     die("Course not found.");
 }
 
@@ -155,7 +155,7 @@ mysqli_data_seek($lessons, 0);
 .btn-success:hover { background: #1e7e34; }
 </style>
 
-<title><?= htmlspecialchars($courseData['title']) ?></title>
+<title><?= htmlspecialchars($course['title']) ?></title>
 <link rel="stylesheet" href="../assets/style.css">
 </head>
 
@@ -164,14 +164,11 @@ mysqli_data_seek($lessons, 0);
 <?php include "../includes/student_header.php"; ?>
 
 <div class="container">
-    <h2><?= htmlspecialchars($courseData['title']) ?></h2>
-    <p>Your lessons for this course</p>
-
-    <p><strong>Progress: <?= $percentage ?>%</strong></p>
+    <h2><?= htmlspecialchars($course['title']) ?> --- Progress: <?= $percentage ?>%</h2>
 
     <div style="width:<?= $percentage ?>%; height:20px; background:#1a73e8; border-radius:4px;"></div>
-
-    <br>
+    
+    <p>Your lessons for this course</p>
 
     <table class="table">
         <tr>

@@ -42,7 +42,7 @@ $courses = mysqli_query($conn, "
                         <td>
                             <a class="btn btn-primary" 
                                href="course.php?id=<?= $row['id'] ?>">
-                               <i class="fa fa-folder-open"></i> Add Lessons
+                               <i class="fa fa-folder-open"></i> Manager Course
                             </a>
                         </td>
                     </tr>
