@@ -50,23 +50,25 @@ $cert = mysqli_fetch_assoc(mysqli_query($conn, "
     SELECT * FROM certificates WHERE $where LIMIT 1
 "));
 
-
-if ($cert) {
-
-    // EXPIRE CHECK
-    if (!empty($cert['expires_at']) && strtotime($cert['expires_at']) < time()) {
-        die("This certificate has expired and cannot be downloaded.");
-    }
-
-    $certCode = $cert['certificate_code'];
-
-} else {
-    die("Certificate not found. Please complete the course.");
-}
-
+// ---------------------------
+// 1. Certificate NOT FOUND
+// ---------------------------
 if (!$cert) {
-    die("Certificate not found.");
+    showCertificateError("Certificate not found. Please complete the course first.");
 }
+
+// ---------------------------
+// 2. EXPIRE CHECK
+// ---------------------------
+if (!empty($cert['expires_at']) && strtotime($cert['expires_at']) < time()) {
+    showCertificateError("This certificate has expired and cannot be downloaded.");
+}
+
+// ---------------------------
+// 3. READY TO USE CERTIFICATE
+// ---------------------------
+$certCode = $cert['certificate_code'];
+$expires_at = $cert['expires_at'];
 
 // Load snapshot data
 $student_name  = htmlspecialchars($cert['student_name']);
@@ -90,6 +92,72 @@ $stamp     = "$assetDir/stamp.png";
 // ===========================
 // PDF TEMPLATE
 // ===========================
+
+function showCertificateError($message) {
+    echo "
+    <html>
+    <head>
+        <style>
+            body {
+                font-family: Arial, sans-serif;
+                background: #f5f7fa;
+                margin: 0;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                height: 100vh;
+            }
+
+            .error-card {
+                background: white;
+                padding: 30px 40px;
+                border-radius: 12px;
+                box-shadow: 0 4px 20px rgba(0,0,0,0.12);
+                text-align: center;
+                max-width: 450px;
+            }
+
+            .error-card h2 {
+                margin-top: 0;
+                color: #c62828;
+                font-size: 24px;
+            }
+
+            .error-card p {
+                color: #555;
+                font-size: 15px;
+                margin-bottom: 20px;
+            }
+
+            .btn {
+                display: inline-block;
+                padding: 10px 18px;
+                background: #1a73e8;
+                color: white;
+                border-radius: 6px;
+                text-decoration: none;
+                font-size: 14px;
+            }
+
+            .btn:hover {
+                background: #0c57b3;
+            }
+        </style>
+    </head>
+    <body>
+
+        <div class='error-card'>
+            <h2>⚠ Certificate Error</h2>
+            <p>$message</p>
+            <a href='my_certificates.php' class='btn'>Back to My Certificates</a>
+        </div>
+
+    </body>
+    </html>
+    ";
+    exit;
+}
+
 $html = "
 <html>
 <head>

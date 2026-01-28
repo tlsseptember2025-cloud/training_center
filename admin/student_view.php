@@ -1,3 +1,20 @@
+
+<head>
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+
+<style>
+
+.cert-status {
+    font-size: 13px;
+    padding: 6px 10px;
+    display: inline-block;
+}
+
+</style>
+
+</head>
+
 <?php
 include "../includes/admin_header.php";
 include "../includes/auth.php";
@@ -35,7 +52,7 @@ $enrollments = mysqli_query($conn, "
 // FETCH CERTIFICATES (NO DEPENDENCE ON COURSE TABLE)
 // =======================
 $certificates = mysqli_query($conn, "
-    SELECT id, course_title, certificate_code, issued_at
+    SELECT id, course_title, certificate_code, issued_at, expires_at
     FROM certificates
     WHERE student_id = $student_id
     ORDER BY issued_at DESC
@@ -101,11 +118,18 @@ $certificates = mysqli_query($conn, "
                         <th>Course</th>
                         <th>Certificate Code</th>
                         <th>Issued</th>
+                        <th>Expiry</th>
+                        <th>Status</th>
                         <th style="width:240px;">Actions</th>
                     </tr>
                 </thead>
                 <tbody>
                     <?php while ($c = mysqli_fetch_assoc($certificates)): ?>
+                         <?php
+                            $isExpired = strtotime($c['expires_at']) < time();
+                            $statusText = $isExpired ? "Expired" : "Active";
+                            $statusClass = $isExpired ? "cert-status badge bg-danger text-light" : "cert-status badge bg-success text-light";
+                        ?>
                         <tr>
                             <td><?= htmlspecialchars($c['course_title']) ?></td>
 
@@ -116,6 +140,8 @@ $certificates = mysqli_query($conn, "
                             <td>
                                 <?= date("F j, Y", strtotime($c['issued_at'])) ?>
                             </td>
+                            <td><?= date("F j, Y", strtotime($c['expires_at'])) ?></td>
+                            <td><span class="<?= $statusClass ?>"><?= $statusText ?></span></td>
 
                             <td class="actions">
 

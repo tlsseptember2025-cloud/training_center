@@ -26,7 +26,7 @@ $enrolled = mysqli_query($conn, "
 
 // Fetch available courses
 $available = mysqli_query($conn, "
-    SELECT id, title, description
+    SELECT id, title, description,is_active
     FROM courses
     WHERE id NOT IN (SELECT course_id FROM enrollments WHERE student_id = $student_id)
 ");
@@ -97,7 +97,27 @@ $available = mysqli_query($conn, "
                     <td><?= htmlspecialchars($row['title']) ?></td>
                     <td><?= htmlspecialchars($row['description']) ?></td>
                     <td>
-                        <a href="enroll.php?course_id=<?= $row['id'] ?>" class="btn btn-primary">Enroll</a>
+                        <?php if (htmlspecialchars($row['is_active'])): ?>
+                            <a href="enroll.php?course_id=<?= $id ?>" class="btn btn-primary">Enroll</a>
+                        <?php else: ?>
+                          <span 
+                            title="This course is inactive and cannot be enrolled into." 
+                            style="
+                                padding: 8px 12px;
+                                background: #ffdddd;
+                                color: #cc0000;
+                                border: 1px solid #cc0000;
+                                border-radius: 6px;
+                                font-weight: bold;
+                                text-decoration: line-through;
+                                display: inline-block;
+                                cursor: help;
+                            ">
+                            Inactive
+                        </span>
+
+
+                        <?php endif; ?>
 
                     </td>
                 </tr>
