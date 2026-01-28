@@ -142,24 +142,21 @@ $certificates = mysqli_query($conn, "
                             </td>
                             <td><?= date("F j, Y", strtotime($c['expires_at'])) ?></td>
                             <td><span class="<?= $statusClass ?>"><?= $statusText ?></span></td>
+                            <td class="actions text-center">
+                                <div class="btn-group" role="group">
 
-                            <td class="actions">
+                                        <a class="btn btn-sm btn-primary" target="_blank"
+                                        href="../student/certificate.php?id=<?= $c['id'] ?>&student_id=<?= $student_id ?>">
+                                            <i class="fa fa-download"></i> Download
+                                        </a>
 
-                                <!-- DOWNLOAD CERTIFICATE USING CERTIFICATE ID -->
-                                <a href="../student/certificate.php?id=<?= $c['id'] ?>&student_id=<?= $student_id ?>"
-                                   class="btn btn-primary"
-                                   target="_blank">
-                                    <i class="fa fa-download"></i> Download
-                                </a>
+                                        <a class="btn btn-sm btn-secondary" target="_blank"
+                                        href="../verify.php?code=<?= $c['certificate_code'] ?>">
+                                            <i class="fa fa-check"></i> Verify
+                                        </a>
 
-                                <!-- VERIFY CERTIFICATE -->
-                                <a href="../verify.php?code=<?= $c['certificate_code'] ?>"
-                                   class="btn btn-secondary"
-                                   target="_blank">
-                                    <i class="fa fa-check"></i> Verify
-                                </a>
-
-                            </td>
+                                </div>
+                            </td>    
                         </tr>
                     <?php endwhile; ?>
                 </tbody>

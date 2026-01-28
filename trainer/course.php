@@ -1,168 +1,161 @@
 <?php
 include "../includes/auth.php";
-requireRole("trainer");
+requireRole('trainer');
 include "../config/database.php";
+include "../includes/trainer_header.php";
 
-$trainer_id = $_SESSION["user_id"];
-$course_id = isset($_GET["id"]) ? intval($_GET["id"]) : 0;
+$trainer_id = $_SESSION['user_id'];
+$course_id = intval($_GET['id'] ?? 0);
 
 if ($course_id <= 0) {
-    die("<div style='text-align:center;color:red;margin-top:40px;'>Invalid course.</div>");
+    die("Invalid course ID.");
 }
 
-// FETCH COURSE
-$course_res = mysqli_query($conn, "SELECT * FROM courses WHERE id = $course_id LIMIT 1");
-$course = mysqli_fetch_assoc($course_res);
+// VERIFY TRAINER OWNS THIS COURSE
+$course = mysqli_fetch_assoc(mysqli_query($conn, "
+    SELECT c.*
+    FROM courses c
+    JOIN trainer_courses tc ON tc.course_id = c.id
+    WHERE c.id = $course_id AND tc.trainer_id = $trainer_id
+"));
 
 if (!$course) {
-    die("<div style='text-align:center;color:red;margin-top:40px;'>Course not found.</div>");
-}
-
-// ACCESS CHECK
-if ($course['trainer_id'] != $trainer_id) {
-    die("<div style='text-align:center;color:red;margin-top:40px;'>Access denied — you are not assigned to this course.</div>");
+    die("Access denied.");
 }
 
 // FETCH LESSONS
-$lessons = mysqli_query($conn, "SELECT * FROM lessons WHERE course_id = $course_id ORDER BY id ASC");
+$lessons = mysqli_query($conn, "
+    SELECT *
+    FROM lessons
+    WHERE course_id = $course_id
+    ORDER BY id ASC
+");
 ?>
-
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <title>Manage Course</title>
-    <link rel="stylesheet" href="../assets/css/dashboard.css">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+<title>Manage Course</title>
 
-    <style>
-        .page-title {
-            font-size: 26px;
-            font-weight: 700;
-            margin-bottom: 25px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
+<style>
+.page-container {
+    width: 90%;
+    margin: auto;
+    margin-top: 30px;
+}
 
-        .course-box {
-            background: #fff;
-            padding: 35px;
-            border-radius: 14px;
-            box-shadow: 0 4px 16px rgba(0,0,0,0.08);
-            margin-bottom: 35px;
-            text-align: center;
-        }
+.table-card {
+    background: #fff;
+    padding: 25px;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    margin-top: 25px;
+}
 
-        .course-title {
-            font-size: 28px;
-            font-weight: 700;
-            margin-bottom: 10px;
-        }
+.styled-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 15px;
+}
 
-        .add-btn {
-            margin-top: 15px;
-            padding: 10px 20px;
-            background: #1a73e8;
-            color: #fff;
-            border-radius: 8px;
-            font-weight: bold;
-            border: none;
-            cursor: pointer;
-        }
-        .add-btn i {
-            margin-right: 6px;
-        }
+.styled-table th {
+     background: #1a2238;
+    padding: 12px;
+    text-align: left;
+    color: white;
+    font-weight: bold;
+    border-bottom: 1px solid #ddd;
+    white-space: nowrap; /* keeps labels tidy */
+}
 
-        .lessons-box {
-            background: #fff;
-            padding: 25px;
-            border-radius: 14px;
-            box-shadow: 0 4px 16px rgba(0,0,0,0.06);
-        }
+.styled-table td {
+    padding: 12px;
+    border-bottom: 1px solid #ddd;
+}
 
-        .lessons-title {
-            font-size: 22px;
-            font-weight: 600;
-            margin-bottom: 18px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
+.btn {
+    padding: 8px 14px;
+    text-decoration: none;
+    color: white;
+    border-radius: 6px;
+}
 
-        .lesson-row {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            background: #f8f9fc;
-            padding: 14px 18px;
-            border-radius: 10px;
-            margin-bottom: 10px;
-        }
+.btn-primary { background: #007bff; }
+.btn-secondary { background: #6c757d; }
+.btn-success { background: #28a745; }
+.btn-warning { background: #f0ad4e; }
+.btn-danger { background: #dc3545; }
 
-        .open-btn {
-            background: #1a73e8;
-            color: #fff;
-            border-radius: 7px;
-            padding: 7px 15px;
-            font-size: 14px;
-            border: none;
-            cursor: pointer;
-        }
-        .open-btn i {
-            margin-right: 5px;
-        }
-    </style>
+h2 { margin-bottom: 10px; }
+.section-title { margin-top: 40px; }
+
+
+</style>
+
 </head>
 <body>
 
-<?php include "../includes/trainer_header.php"; ?>
-
 <div class="page-container">
 
-    <!-- PAGE TITLE -->
-    <h2 class="page-title">
-        <i class="bi bi-journal-text"></i> Manage Course
-    </h2>
+    <div class="table-card">
+        <h2>Course Details</h2>
 
-    <a href="dashboard.php" class="back-btn">
-        <i class="fa fa-arrow-left"></i> Back to Main
-    </a>
+        <table class="styled-table">
+            <thead>
+                <tr>
+                    <th>Title</th>
+                    <th>Description</th>
+                    <th>Price</th>
+                </tr>
+            </thead>
 
-    <!-- COURSE BOX -->
-    <div class="course-box">
-        <div class="course-title"><?= htmlspecialchars($course['title']) ?></div>
-        <p><?= nl2br(htmlspecialchars($course['description'])) ?></p>
-        <p><strong>Price:</strong> $<?= number_format($course['price'], 2) ?></p>
+            <tbody>
+                <tr>
+                    <td><?= htmlspecialchars($course['title']) ?></td>
+                    <td><?= htmlspecialchars($course['description']) ?></td>
+                    <td>$<?= htmlspecialchars($course['price']) ?></td>
+                </tr>
+            </tbody>
+        </table>
 
-        <a href="add_lesson.php?course_id=<?= $course_id ?>">
-            <button class="add-btn">
-                <i class="bi bi-plus-circle"></i> Add New Lesson
-            </button>
-        </a>
+        <br>
+        <a href="dashboard.php" class="btn btn-secondary">← Back to Main</a>
+        <a href="add_lesson.php?course_id=<?= $course_id ?>" class="btn btn-primary">+ Add New Lesson</a>
     </div>
 
     <!-- LESSON LIST -->
-    <div class="lessons-box">
-        <div class="lessons-title">
-            <i class="bi bi-collection-play"></i> Course Lessons
-        </div>
+    <div class="table-card">
+        <h2 class="section-title">Course Lessons</h2>
 
-        <?php if (mysqli_num_rows($lessons) == 0): ?>
-            <p style="color:#666;">No lessons added yet.</p>
-        <?php else: ?>
-            <?php while ($lesson = mysqli_fetch_assoc($lessons)): ?>
-                <div class="lesson-row">
-                    <div><?= htmlspecialchars($lesson['title']) ?></div>
+        <?php if (mysqli_num_rows($lessons) > 0): ?>
+        <table class="styled-table">
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Lesson Title</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+            <?php $i = 1; while ($l = mysqli_fetch_assoc($lessons)): ?>
+                <tr>
+                    <td><?= $i++ ?></td>
+                    <td><?= htmlspecialchars($l['title']) ?></td>
+                    <td>
+                        <a href="lesson.php?id=<?= $l['id'] ?>&course_id=<?= $course_id ?>" 
+                        class="btn btn-warning btn-sm">Open</a>
 
-                    <a href="lesson.php?id=<?= $lesson['id'] ?>">
-                        <button class="open-btn">
-                            <i class="bi bi-folder2-open"></i> Open
-                        </button>
-                    </a>
-                </div>
+                        <a href="attendance.php?lesson_id=<?= $l['id'] ?>&course_id=<?= $course_id ?>" 
+                        class="btn btn-success btn-sm">Take Attendance</a>
+                    </td>
+                </tr>
             <?php endwhile; ?>
+            </tbody>
+        </table>
+
+        <?php else: ?>
+            <p>No lessons added yet.</p>
         <?php endif; ?>
+
     </div>
 
 </div>

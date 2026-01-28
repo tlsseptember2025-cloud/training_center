@@ -94,12 +94,13 @@ if ($lesson['trainer_id'] != $trainer_id) {
 
     <h2 class="lesson-title"><?= htmlspecialchars($lesson['title']); ?></h2>
 
+    <a href="course.php?id=<?= $_GET['course_id'] ?>" class="btn btn-secondary mb-3">
+    ← Back to Course
+</a>
+
     <table class="lesson-horizontal-table">
 
-        <tr>
-            <th>Lesson Content</th>
-            <td><?= nl2br(htmlspecialchars($lesson['content'])); ?></td>
-        </tr>
+        
 
         <?php if (!empty($lesson['file'])): ?>
         <tr>
