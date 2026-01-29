@@ -174,45 +174,48 @@ h1 {
 
 <h1><?= htmlspecialchars($course['title']) ?> – Attendance Report</h1>
 
-<div class="info-box">
 
-    <div class="info-row">
-        <?php  
+
+<!-- INFO GRID -->
+<table width="100%" style="margin: 20px auto; font-size:16px;">
+    <!-- ROW 1 -->
+    <tr>
+        <td style="width:50%; padding:10px;">
+            <?php  
             $student_logo = "http://localhost/training_center/assets/icons/student.svg";
         ?>
         <img src="<?php echo $student_logo; ?>" class="info-icon">
-        <div class="info-label">Student</div>
-        <div class="info-value"><?= htmlspecialchars($studentDisplayName) ?></div>
-    </div>
+            <strong>Student:</strong> <?= htmlspecialchars($studentDisplayName) ?>
+        </td>
 
-    <div class="info-row">
-        <?php  
+        <td style="width:50%; padding:10px;">
+            <?php  
             $trainer_logo = "http://localhost/training_center/assets/icons/trainer.svg";
         ?>
         <img src="<?php echo $trainer_logo; ?>" class="info-icon">
-        <div class="info-label">Trainer</div>
-        <div class="info-value"><?= htmlspecialchars($trainerName) ?></div>
-    </div>
+            <strong>Trainer:</strong> <?= htmlspecialchars($trainerName) ?>
+        </td>
+    </tr>
 
-    <div class="info-row">
-        <?php  
+    <!-- ROW 2 -->
+    <tr>
+        <td style="width:50%; padding:10px;">
+            <?php  
             $attendance_logo = "http://localhost/training_center/assets/icons/attendance.svg";
         ?>
         <img src="<?php echo $attendance_logo; ?>" class="info-icon">
-        <div class="info-label">Attendance</div>
-        <div class="info-value"><?= $attendancePercentage ?>%</div>
-    </div>
+            <strong>Attendance:</strong> <?= $attendancePercentage ?>%
+        </td>
 
-    <div class="info-row">
-        <?php  
+        <td style="width:50%; padding:10px;">
+            <?php  
             $session_logo = "http://localhost/training_center/assets/icons/sessions.svg";
         ?>
         <img src="<?php echo $session_logo; ?>" class="info-icon">
-        <div class="info-label">Total Sessions</div>
-        <div class="info-value"><?= $totalSessions ?></div>
-    </div>
-
-</div>
+            <strong>Total Sessions:</strong> <?= $totalSessions ?>
+        </td>
+    </tr>
+</table>
 
 <hr style='border:0; height:2px; background:#333; margin-bottom:25px;'>
 
