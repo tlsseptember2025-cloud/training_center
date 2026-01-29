@@ -180,7 +180,19 @@ mysqli_data_seek($lessons, 0);
 <div class="container">
     <h2><?= htmlspecialchars($course['title']) ?> --- Progress: <?= $percentage ?>%</h2>
 
+    <a href="courses.php" class="back-btn">
+        <i class="fa fa-arrow-left"></i> Back to Courses
+    </a>
+
     <div style="width:<?= $percentage ?>%; height:20px; background:#1a73e8; border-radius:4px;"></div>
+
+     <p>
+        <a href="attendance_report.php?course_id=<?= $course_id ?>" 
+            class="btn btn-primary" 
+            style="margin-top: 15px; display: inline-block;"
+            target="_blank">📄 Download Attendance Report
+        </a>
+    </p>
     
     <p>Your lessons for this course</p>
 

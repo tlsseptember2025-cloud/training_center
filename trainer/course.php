@@ -97,6 +97,7 @@ h2 { margin-bottom: 10px; }
 <div class="page-container">
 
     <div class="table-card">
+        <a href="dashboard.php" class="btn btn-secondary">← Back to Main</a>
         <h2>Course Details</h2>
 
         <table class="styled-table">
@@ -116,16 +117,12 @@ h2 { margin-bottom: 10px; }
                 </tr>
             </tbody>
         </table>
-
-        <br>
-        <a href="dashboard.php" class="btn btn-secondary">← Back to Main</a>
-        <a href="add_lesson.php?course_id=<?= $course_id ?>" class="btn btn-primary">+ Add New Lesson</a>
     </div>
 
     <!-- LESSON LIST -->
     <div class="table-card">
         <h2 class="section-title">Course Lessons</h2>
-
+        <a href="add_lesson.php?course_id=<?= $course_id ?>" class="btn btn-primary">+ Add New Lesson</a>
         <?php if (mysqli_num_rows($lessons) > 0): ?>
         <table class="styled-table">
             <thead>

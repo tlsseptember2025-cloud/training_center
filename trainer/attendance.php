@@ -117,6 +117,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <a href="course.php?id=<?= $_GET['course_id'] ?>">← Back to Lessons</a>
 
     <p><strong>Lesson:</strong> <?= htmlspecialchars($lesson['title']) ?></p>
+    
+    <p><strong>Date & Time:</strong> <?php echo date("F j, Y, g:i:s A"); ?></p>
 
     <form method="post">
     <div class="table-card">

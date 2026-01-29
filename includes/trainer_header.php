@@ -79,6 +79,7 @@ $current = basename($_SERVER['PHP_SELF']);
            class="<?= $current === 'dashboard.php' ? 'active' : '' ?>">
            Dashboard
         </a>
+        <a href="attendance_stats.php" class="btn btn-primary btn-sm">Attendance Stats</a>
     </div>
 
     <!-- RIGHT SIDE (Logout) -->
