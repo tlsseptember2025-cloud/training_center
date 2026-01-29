@@ -125,7 +125,10 @@ while ($s = mysqli_fetch_assoc($students)) {
     <td><strong><?= $row['percent'] ?>%</strong></td>
 
     <td>
-          <a href="attendance_report_student.php?student_id=<?= $row['id'] ?>&course_id=<?= $course_id ?>"
+        <a href="attendance_history_student.php?student_id=<?= $row['id'] ?>&course_id=<?= $course_id ?>" 
+           class="btn btn-primary btn-sm">View Details</a>
+
+        <a href="attendance_report_student.php?student_id=<?= $row['id'] ?>&course_id=<?= $course_id ?>"
            class="btn btn-secondary btn-sm">Download PDF</a>
     </td>
 </tr>
