@@ -84,18 +84,19 @@ $certExists = mysqli_query($conn, "
 ");
 
 // ============================================================
-// AUTO-GENERATE CERTIFICATE WHEN 100% COMPLETED
+// AUTO GENERATE CERTIFICATE WHEN 100% COMPLETED
 // ============================================================
 if ($percentage == 100 && mysqli_num_rows($certExists) == 0) {
 
     // Generate certificate code
     $certCode = "CERT-" . strtoupper(substr(md5(uniqid()), 0, 8));
 
-    // Fetch student name
+    // Fetch student info
     $studentRow = mysqli_fetch_assoc(mysqli_query($conn,
-        "SELECT name FROM users WHERE id = $student_id"
+        "SELECT name, email FROM users WHERE id = $student_id"
     ));
-    $student_name = mysqli_real_escape_string($conn, $studentRow['name']);
+    $student_name  = mysqli_real_escape_string($conn, $studentRow['name']);
+    $student_email = $studentRow['email'];
 
     // Fetch course title
     $courseRow = mysqli_fetch_assoc(mysqli_query($conn,
@@ -103,7 +104,7 @@ if ($percentage == 100 && mysqli_num_rows($certExists) == 0) {
     ));
     $course_title = mysqli_real_escape_string($conn, $courseRow['title']);
 
-    // Fetch trainer name (correct table trainer_courses)
+    // Fetch trainer name
     $trainerRow = mysqli_fetch_assoc(mysqli_query($conn,
         "SELECT u.name 
          FROM trainer_courses tc
@@ -111,25 +112,38 @@ if ($percentage == 100 && mysqli_num_rows($certExists) == 0) {
          WHERE tc.course_id = $course_id
          LIMIT 1"
     ));
-
     $trainer_name = $trainerRow ?
         mysqli_real_escape_string($conn, $trainerRow['name']) :
         "No Trainer Assigned";
 
-    // INSERT full certificate record
+    // Insert certificate entry
     $issued_at  = date("Y-m-d");
-$expires_at = date("Y-m-d", strtotime("+2 years"));
+    $expires_at = date("Y-m-d", strtotime("+2 years"));
 
-mysqli_query($conn, "
-    INSERT INTO certificates 
-        (student_id, student_name, course_id, course_title, trainer_name, certificate_code, issued_at, expires_at)
-    VALUES 
-        ($student_id, '$student_name', $course_id, '$course_title', '$trainer_name', '$certCode', '$issued_at', '$expires_at')
-") or die('Insert Error: ' . mysqli_error($conn));
+    mysqli_query($conn, "
+        INSERT INTO certificates 
+            (student_id, student_name, course_id, course_title, trainer_name, certificate_code, issued_at, expires_at)
+        VALUES 
+            ($student_id, '$student_name', $course_id, '$course_title', '$trainer_name', '$certCode', '$issued_at', '$expires_at')
+    ") or die("Insert Error: " . mysqli_error($conn));
 
+    $certID = mysqli_insert_id($conn);
+
+    // Run generator
+    include "../lib/generate_certificate.php";
+
+
+    // GET cert ID
+    $cert_id = mysqli_insert_id($conn);
+
+    // ============================================================
+    // AUTO GENERATE PDF + EMAIL IT
+    // ============================================================
+
+    include "../lib/generate_certificate.php";  //  <--- CALLS AUTO PDF + EMAIL
 }
 
-// Reset lessons pointer for table display
+// Reset lessons pointer
 mysqli_data_seek($lessons, 0);
 
 ?>
