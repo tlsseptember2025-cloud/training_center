@@ -41,6 +41,11 @@ $result = mysqli_query($conn, "SELECT * FROM courses");
                     <td><?= htmlspecialchars($course['price']) ?>$</td>
 
                     <td class="actions">
+
+                        <a href="course_attendance.php?course_id=<?= $course['id'] ?>" 
+                            class="btn btn-primary btn-sm">📘 Attendance
+                        </a>
+
                         <a href="course_view.php?id=<?= $course['id'] ?>" title="View">
                             <i class="fa fa-eye"></i>
                         </a>

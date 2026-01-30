@@ -173,6 +173,10 @@ $userRole = isset($_SESSION['role']) ? ucfirst($_SESSION['role']) : "";
        class="<?= $current === 'certificates.php' ? 'active' : '' ?>">
        Certificates
     </a>
+    <a href="/training_center/admin/admin_attendance.php"
+       class="<?= $current === 'certificates.php' ? 'active' : '' ?>">
+       Attendance Records
+    </a>
 
     <a href="/training_center/logout.php">Logout</a>
 </div>
