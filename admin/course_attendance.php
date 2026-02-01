@@ -10,33 +10,37 @@ if ($course_id <= 0) {
     exit;
 }
 
-// ===== Fetch course info =====
+/* ============================================================
+   FETCH COURSE INFO
+============================================================ */
 $course = mysqli_fetch_assoc(mysqli_query($conn, "
-    SELECT c.*, u.name AS trainer_name 
+    SELECT c.*, u.name AS trainer_name
     FROM courses c
     LEFT JOIN trainer_courses tc ON tc.course_id = c.id
     LEFT JOIN users u ON u.id = tc.trainer_id
     WHERE c.id = $course_id
 "));
-
 if (!$course) die("Course not found.");
 
-
-// ===== Fetch lessons =====
-$lessons = mysqli_query($conn, "
-    SELECT id, title FROM lessons 
-    WHERE course_id = $course_id ORDER BY id ASC
+/* ============================================================
+   FETCH UNIQUE ATTENDANCE DATES (actual days attendance happened)
+============================================================ */
+$datesQuery = mysqli_query($conn, "
+    SELECT DISTINCT attendance_date 
+    FROM attendance
+    WHERE course_id = $course_id
+    ORDER BY attendance_date ASC
 ");
 
-$lessonList = [];
-while ($l = mysqli_fetch_assoc($lessons)) {
-    $lessonList[$l['id']] = $l['title'];
+$dates = [];
+while ($d = mysqli_fetch_assoc($datesQuery)) {
+    $dates[] = $d['attendance_date'];
 }
+$totalDays = count($dates);
 
-$totalLessons = count($lessonList);
-
-
-// ===== Fetch enrolled students =====
+/* ============================================================
+   FETCH ENROLLED STUDENTS
+============================================================ */
 $students = mysqli_query($conn, "
     SELECT u.id, u.name
     FROM enrollments e
@@ -45,18 +49,19 @@ $students = mysqli_query($conn, "
     ORDER BY u.name ASC
 ");
 
+/* ============================================================
+   FETCH RAW ATTENDANCE DATA
+============================================================ */
+$attendanceData = []; // [student_id][date] = status
 
-// ===== Fetch attendance records =====
-$attendanceData = [];
-
-$attendance = mysqli_query($conn, "
-    SELECT student_id, lesson_id, status 
+$att = mysqli_query($conn, "
+    SELECT student_id, attendance_date, status
     FROM attendance
     WHERE course_id = $course_id
 ");
 
-while ($row = mysqli_fetch_assoc($attendance)) {
-    $attendanceData[$row['student_id']][$row['lesson_id']] = $row['status'];
+while ($row = mysqli_fetch_assoc($att)) {
+    $attendanceData[$row["student_id"]][$row["attendance_date"]] = $row["status"];
 }
 
 ?>
@@ -113,99 +118,89 @@ while ($row = mysqli_fetch_assoc($attendance)) {
 
 <div class="admin-container">
 
-    <h1>📘 Attendance Summary — <?= htmlspecialchars($course['title']) ?></h1>
+<h1>📘 Attendance Summary — <?= htmlspecialchars($course['title']) ?></h1>
 
-    <div class="summary-card">
-        <p><strong>Trainer:</strong> <?= $course['trainer_name'] ?: "Not Assigned" ?></p>
-        <p><strong>Total Lessons:</strong> <?= $totalLessons ?></p>
-    </div>
-
-    <a href="courses.php" class="btn btn-secondary">
-        <i class="fa fa-arrow-left"></i> Back to Courses
-    </a>
-
-    <a href="attendance_export.php?course_id=<?= $course_id ?>" 
-       class="btn btn-primary" style="margin-bottom:15px;">
-       ⬇ Download Attendance Report
-    </a>
-
-    <?php if ($totalLessons == 0): ?>
-        <div class="summary-card" style="text-align:center;">
-            No lessons created for this course.
-        </div>
-    <?php else: ?>
-
-
-    <!-- ========================== -->
-    <!-- ATTENDANCE MATRIX TABLE -->
-    <!-- ========================== -->
-
-    <table class="matrix-table">
-        <thead>
-            <tr>
-                <th>Student</th>
-
-                <?php foreach ($lessonList as $lessonTitle): ?>
-                    <th><?= htmlspecialchars($lessonTitle) ?></th>
-                <?php endforeach; ?>
-
-                <th>Total</th>
-                <th>Attendance %</th>
-            </tr>
-        </thead>
-
-        <tbody>
-
-        <?php while ($s = mysqli_fetch_assoc($students)): ?>
-            <?php 
-                $sid = $s['id'];
-                $present = $late = $excused = $absent = 0;
-            ?>
-            <tr>
-                <td><strong><?= htmlspecialchars($s['name']) ?></strong></td>
-
-                <?php foreach ($lessonList as $lid => $lessonTitle): ?>
-                    <?php
-                        $status = $attendanceData[$sid][$lid] ?? "-";
-                        $cls = "";
-
-                        if ($status == "present") { $cls="present"; $present++; }
-                        elseif ($status == "absent") { $cls="absent"; $absent++; }
-                        elseif ($status == "late") { $cls="late"; $late++; }
-                        elseif ($status == "excused") { $cls="excused"; $excused++; }
-                    ?>
-                    <td>
-                        <?php if ($status == "-"): ?>
-                            —
-                        <?php else: ?>
-                            <span class="badge-sm <?= $cls ?>"><?= ucfirst($status) ?></span>
-                        <?php endif; ?>
-                    </td>
-                <?php endforeach; ?>
-
-                <?php 
-                $totalMarked = $present + $late + $excused + $absent;
-                $percentage = $totalLessons > 0 
-                    ? round(($present / $totalLessons) * 100)
-                    : 0;
-                ?>
-
-                <td class="total-box">
-                    ✔ Present: <?= $present ?><br>
-                    ❌ Absent: <?= $absent ?><br>
-                    ⏰ Late: <?= $late ?><br>
-                    🛈 Excused: <?= $excused ?>
-                </td>
-
-                <td><strong><?= $percentage ?>%</strong></td>
-            </tr>
-        <?php endwhile; ?>
-
-        </tbody>
-    </table>
-
-    <?php endif; ?>
-
+<div class="summary-card">
+    <p><strong>Trainer:</strong> <?= $course["trainer_name"] ?: "Not Assigned" ?></p>
+    <p><strong>Total Attendance Days:</strong> <?= $totalDays ?></p>
 </div>
 
-<?php include "../includes/footer.php"; ?>
+<a href="courses.php" class="btn btn-secondary">
+    <i class="fa fa-arrow-left"></i> Back to Courses
+</a>
+
+<a href="attendance_export.php?course_id=<?= $course_id ?>" 
+   class="btn btn-primary" style="margin-bottom:15px;">
+   ⬇ Download Attendance Report
+</a>
+
+<?php if ($totalDays == 0): ?>
+<div class="summary-card" style="text-align:center;">No attendance taken yet.</div>
+<?php else: ?>
+
+<!-- ========================== -->
+<!-- DAILY ATTENDANCE MATRIX   -->
+<!-- ========================== -->
+
+<table class="matrix-table">
+<thead>
+    <tr>
+        <th>Student</th>
+
+        <?php foreach ($dates as $date): ?>
+            <th><?= date("M j", strtotime($date)) ?></th>
+        <?php endforeach; ?>
+
+        <th>Total</th>
+        <th>Attendance %</th>
+    </tr>
+</thead>
+
+<tbody>
+
+<?php while ($s = mysqli_fetch_assoc($students)): ?>
+<?php
+    $sid = $s["id"];
+    $present = $late = $excused = $absent = 0;
+?>
+<tr>
+    <td><strong><?= htmlspecialchars($s["name"]) ?></strong></td>
+
+    <?php foreach ($dates as $date): ?>
+    <?php
+        $status = $attendanceData[$sid][$date] ?? "absent"; // if none → absent
+        $cls = $status;
+        if ($status == "present") $present++;
+        elseif ($status == "late") $late++;
+        elseif ($status == "excused") $excused++;
+        else $absent++;
+    ?>
+        <td>
+            <span class="badge-sm <?= $cls ?>"><?= ucfirst($status) ?></span>
+        </td>
+    <?php endforeach; ?>
+
+    <?php
+    // Weighted attendance
+    $earned = ($present * 1) + ($excused * 1) + ($late * 0.5);
+    $percentage = $totalDays > 0 ? round(($earned / $totalDays) * 100) : 0;
+    ?>
+
+    <td class="total-box">
+        ✔ Present: <?= $present ?><br>
+        ❌ Absent: <?= $absent ?><br>
+        ⏰ Late: <?= $late ?><br>
+        🛈 Excused: <?= $excused ?>
+    </td>
+
+    <td><strong><?= $percentage ?>%</strong></td>
+
+</tr>
+<?php endwhile; ?>
+
+</tbody>
+</table>
+
+<?php endif; ?>
+
+</div>
