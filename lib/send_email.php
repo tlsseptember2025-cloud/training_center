@@ -6,6 +6,41 @@ require_once __DIR__ . '/PHPMailer/PHPMailer.php';
 require_once __DIR__ . '/PHPMailer/SMTP.php';
 require_once __DIR__ . '/PHPMailer/Exception.php';
 
+
+function send_email($new_email, $subject, $body){
+     
+    $mail2 = new PHPMailer(true);
+
+    try {
+        // SMTP Settings
+        $mail2->isSMTP();
+        $mail2->Host       = 'smtp.gmail.com';  
+        $mail2->SMTPAuth   = true;
+        $mail2->Username   = 'ramiwahdan2023@gmail.com';
+        $mail2->Password   = 'alem bevx vcee jvir';  
+        $mail2->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
+        $mail2->Port       = 587;
+
+        // Sender info
+        $mail2->setFrom('wahbib@gmail.com', 'Training Center');
+        $mail2->addAddress($new_email, 'Admin');
+
+        // Email content
+        $mail2->isHTML(true);
+        $mail2->Subject = "Request to change your login email";
+
+        $mail2->Body = "
+            <?php $body?>
+        ";
+
+        $mail2->send();
+        return "SUCCESS";
+
+    } catch (Exception $e) {
+        return "Email could not be sent. Error: {$mail2->ErrorInfo}";
+    }
+} 
+
 function sendCertificateEmail($toEmail, $toName, $courseName, $certificatePath) {
 
     $mail = new PHPMailer(true);
