@@ -6,7 +6,25 @@ require_once __DIR__ . "/auth.php";
 requireRole('trainer'); 
 
 $trainerName = $_SESSION['user_name'] ?? "Trainer";
+
+// Fetch trainer profile photo
+$trainerId = $_SESSION["user_id"];
+$photoQuery = mysqli_query($conn, "SELECT photo FROM users WHERE id = $trainerId");
+$photoRow = mysqli_fetch_assoc($photoQuery);
+$trainerPhoto = $photoRow["photo"] ?? "";
+
+// Build photo URL
+$trainerPhotoURL = $trainerPhoto 
+    ? "/training_center/uploads/profile_photos/" . $trainerPhoto
+    : "/training_center/assets/images/default_user.png"; // fallback image
+
+
 $current = basename($_SERVER['PHP_SELF']);
+
+// Profile photo (safe fallback)
+$profilePhoto = !empty($_SESSION['photo'])
+    ? "/training_center/uploads/profile_photos/" . $_SESSION['photo']
+    : "/training_center/assets/default-user.png";
 ?>
 
 <!DOCTYPE html>
@@ -63,9 +81,20 @@ $current = basename($_SERVER['PHP_SELF']);
 
 /* Logout button */
 .logout-link {
-    margin-left: auto;
+    margin-left: 10px;
+}
+
+/* NEW: Profile photo circle */
+.nav-profile-pic {
+    width: 42px;
+    height: 42px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid #fff;
+    margin-right: 12px;
 }
 </style>
+
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 </head>
 
@@ -81,13 +110,22 @@ $current = basename($_SERVER['PHP_SELF']);
            class="<?= $current === 'dashboard.php' ? 'active' : '' ?>">
            Dashboard
         </a>
-       
+
+        <a href="/training_center/trainer/profile.php"
+   class="<?= $current === 'profile.php' ? 'active' : '' ?>">
+   Profile
+</a>
+
     </div>
 
-    <!-- RIGHT SIDE (Logout) -->
-    <a href="/training_center/logout.php" class="logout-link">
-        <i class="fa fa-right-from-bracket"></i> Logout
-    </a>
+    <!-- RIGHT SIDE (Profile photo + Logout) -->
+    <div style="display:flex; align-items:center;">
+        <img src="<?= $trainerPhotoURL ?>" 
+         style="width:40px; height:40px; border-radius:50%; border:2px solid #fff; object-fit:cover; margin-right:15px;">
+        <a href="/training_center/logout.php" class="logout-link">
+            <i class="fa fa-right-from-bracket"></i> Logout
+        </a>
+    </div>
 
 </div>
 
@@ -101,7 +139,6 @@ document.addEventListener("DOMContentLoaded", function () {
 
     let lastActivity = Date.now();
 
-    // Reset timer on mouse/keyboard/touch
     ["mousemove", "keypress", "click", "scroll"].forEach(evt => {
         document.addEventListener(evt, () => lastActivity = Date.now());
     });
@@ -109,7 +146,6 @@ document.addEventListener("DOMContentLoaded", function () {
     function checkIdle() {
         let inactiveSeconds = (Date.now() - lastActivity) / 1000;
 
-        // Show warning popup
         if (inactiveSeconds >= warningTime && inactiveSeconds < timeoutSeconds) {
             if (!document.getElementById("idleWarning")) {
                 let warn = document.createElement("div");
@@ -128,7 +164,6 @@ document.addEventListener("DOMContentLoaded", function () {
             }
         }
 
-        // Auto logout
         if (inactiveSeconds >= timeoutSeconds) {
             window.location.href = "/training_center/login.php?timeout=1";
         }
@@ -137,4 +172,3 @@ document.addEventListener("DOMContentLoaded", function () {
     setInterval(checkIdle, 1000);
 });
 </script>
-
