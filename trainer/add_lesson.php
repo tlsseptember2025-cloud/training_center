@@ -1,8 +1,10 @@
 <?php
+// --------------------------------------------------------
+// START + AUTH
+// --------------------------------------------------------
 include "../includes/auth.php";
 requireRole('trainer');
 include "../config/database.php";
-include "../includes/trainer_header.php";
 
 $trainer_id = $_SESSION['user_id'];
 $course_id  = (int)($_GET['course_id'] ?? 0);
@@ -11,24 +13,29 @@ if ($course_id <= 0) {
     die("<h2 style='color:red;text-align:center;margin-top:40px;'>Invalid course.</h2>");
 }
 
-// --- Correct trainer assignment check using courses table ---
+// --------------------------------------------------------
+// VERIFY TRAINER IS ASSIGNED TO THIS COURSE
+// --------------------------------------------------------
 $assigned = mysqli_query($conn, "
     SELECT 1 FROM courses
-    WHERE id = $course_id
-      AND trainer_id = $trainer_id
+    WHERE id = $course_id AND trainer_id = $trainer_id
 ");
 
 if (mysqli_num_rows($assigned) == 0) {
     die("<h2 style='color:red;text-align:center;margin-top:40px;'>Access denied — you are not assigned to this course.</h2>");
 }
 
+// --------------------------------------------------------
+// PROCESS FORM BEFORE ANY OUTPUT
+// --------------------------------------------------------
 $message = "";
 
-if (isset($_POST['add_lesson'])) {
+if ($_SERVER['REQUEST_METHOD'] === "POST" && isset($_POST['add_lesson'])) {
 
-    $title = mysqli_real_escape_string($conn, $_POST['title']);
+    $title = mysqli_real_escape_string($conn, trim($_POST['title']));
     $file_name = "";
 
+    // ---------- FILE UPLOAD ----------
     if (!empty($_FILES['lesson_file']['name'])) {
 
         $file_name = time() . "_" . basename($_FILES['lesson_file']['name']);
@@ -39,6 +46,7 @@ if (isset($_POST['add_lesson'])) {
         }
     }
 
+    // ---------- INSERT LESSON ----------
     $insert = mysqli_query($conn, "
         INSERT INTO lessons (course_id, title, file)
         VALUES ($course_id, '$title', '$file_name')
@@ -51,6 +59,11 @@ if (isset($_POST['add_lesson'])) {
         $message = "<div class='alert error'>❌ Database error — cannot add lesson.</div>";
     }
 }
+
+// --------------------------------------------------------
+// NOW WE CAN SAFELY LOAD THE HEADER (HTML OUTPUT STARTS)
+// --------------------------------------------------------
+include "../includes/trainer_header.php";
 ?>
 
 <style>

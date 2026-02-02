@@ -19,11 +19,12 @@ $course = mysqli_fetch_assoc(mysqli_query($conn, "
     JOIN trainer_courses tc ON tc.course_id = c.id
     WHERE c.id = $course_id AND tc.trainer_id = $trainer_id
 "));
+
 if (!$course) {
     die("Access denied.");
 }
 
-// Fetch students in this course
+// Fetch students
 $students = mysqli_query($conn, "
     SELECT u.id, u.name 
     FROM enrollments e
@@ -31,35 +32,45 @@ $students = mysqli_query($conn, "
     WHERE e.course_id = $course_id
 ");
 
-// Create array of attendance data
 $attendanceData = [];
 
 while ($s = mysqli_fetch_assoc($students)) {
+
     $sid = $s['id'];
 
-    // Get counts
+    // Count ALL attendance records across ALL lessons
     $stats = mysqli_fetch_assoc(mysqli_query($conn, "
         SELECT 
             SUM(status='present') AS present_count,
             SUM(status='absent') AS absent_count,
             SUM(status='late') AS late_count,
-            COUNT(*) AS total_marked
-        FROM attendance 
-        WHERE course_id = $course_id AND student_id = $sid
+            SUM(status='excused') AS excused_count,
+            COUNT(*) AS total_records
+        FROM attendance
+        WHERE course_id = $course_id 
+          AND student_id = $sid
     "));
 
-    // Calculate attendance %
-    $attendancePercent = ($stats['total_marked'] > 0)
-        ? round(($stats['present_count'] / $stats['total_marked']) * 100)
+    $present = $stats['present_count'] ?? 0;
+    $absent = $stats['absent_count'] ?? 0;
+    $late = $stats['late_count'] ?? 0;
+    $excused = $stats['excused_count'] ?? 0;
+    $totalRecords = $stats['total_records'] ?? 0;
+
+    // SAME FORMULA AS ADMIN PAGE
+    $earned = ($present * 1) + ($excused * 1) + ($late * 0.5);
+
+    $attendancePercent = ($totalRecords > 0)
+        ? round(($earned / $totalRecords) * 100)
         : 0;
 
     $attendanceData[] = [
         "id" => $sid,
         "name" => $s['name'],
-        "present" => $stats['present_count'],
-        "absent" => $stats['absent_count'],
-        "late" => $stats['late_count'],
-        "total" => $stats['total_marked'],
+        "present" => $present,
+        "absent" => $absent,
+        "late" => $late,
+        "excused" => $excused,
         "percent" => $attendancePercent
     ];
 }
@@ -95,10 +106,12 @@ while ($s = mysqli_fetch_assoc($students)) {
 .bg-success { background: #d4f4dd; color: #1a7f37; }
 .bg-danger { background: #f4d4d4; color: #a70000; }
 .bg-warning { background: #fff3cd; color: #856404; }
+.bg-info { background: #d4ecff; color: #004c99; }
 </style>
 
 <div class="table-card">
 
+<a href="course.php?id=<?= $_GET['course_id'] ?>">← Back to Lessons</a><br>
 <h2>Attendance Overview – <?= $course['title'] ?></h2>
 
 <table class="styled-table">
@@ -108,6 +121,7 @@ while ($s = mysqli_fetch_assoc($students)) {
     <th>Present</th>
     <th>Absent</th>
     <th>Late</th>
+    <th>Excused</th>
     <th>Attendance %</th>
     <th>Actions</th>
 </tr>
@@ -121,6 +135,7 @@ while ($s = mysqli_fetch_assoc($students)) {
     <td><span class="badge bg-success"><?= $row['present'] ?></span></td>
     <td><span class="badge bg-danger"><?= $row['absent'] ?></span></td>
     <td><span class="badge bg-warning"><?= $row['late'] ?></span></td>
+    <td><span class="badge bg-info"><?= $row['excused'] ?></span></td>
 
     <td><strong><?= $row['percent'] ?>%</strong></td>
 

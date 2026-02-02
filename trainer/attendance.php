@@ -2,7 +2,6 @@
 include "../includes/auth.php";
 requireRole('trainer');
 include "../config/database.php";
-include "../includes/trainer_header.php";
 
 date_default_timezone_set('Asia/Dubai'); 
 $trainer_id = $_SESSION['user_id'];
@@ -57,6 +56,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     header("Location: attendance.php?lesson_id=$lesson_id&course_id=$course_id&saved=1");
     exit;
 }
+include "../includes/trainer_header.php";
 ?>
 <!DOCTYPE html>
 <html>

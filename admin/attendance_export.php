@@ -1,23 +1,21 @@
 <?php
 session_start();
 require "../includes/auth.php";
-requireRole('admin');
+requireRole("admin");
 require "../config/database.php";
 
 require "../lib/dompdf/autoload.inc.php";
 use Dompdf\Dompdf;
 use Dompdf\Options;
 
-if (!isset($_GET['course_id'])) {
-    die("Invalid course.");
-}
+date_default_timezone_set("Asia/Dubai");
 
-$course_id = intval($_GET['course_id']);
+// ============ VALIDATE COURSE ============
+$course_id = intval($_GET["course_id"] ?? 0);
+if ($course_id <= 0) die("Invalid Course");
 
-// =====================================================
-// FETCH COURSE + TRAINER
-// =====================================================
-$course = mysqli_fetch_assoc(mysqli_query($conn, "
+// ============ COURSE + TRAINER ============
+$course = mysqli_fetch_assoc(mysqli_query($conn,"
     SELECT c.title, u.name AS trainer_name
     FROM courses c
     LEFT JOIN trainer_courses tc ON tc.course_id = c.id
@@ -25,15 +23,19 @@ $course = mysqli_fetch_assoc(mysqli_query($conn, "
     WHERE c.id = $course_id
 "));
 
-if (!$course) die("Course not found.");
+$course_title = $course["title"];
+$trainer_name = $course["trainer_name"] ?: "Not Assigned";
 
-$course_title = $course['title'];
-$trainer_name = $course['trainer_name'] ?: "Not Assigned";
+// ============ LESSONS ============
+$lessons_res = mysqli_query($conn,"
+    SELECT id, title
+    FROM lessons
+    WHERE course_id = $course_id
+    ORDER BY id ASC
+");
 
-// =====================================================
-// FETCH STUDENTS IN COURSE
-// =====================================================
-$students = mysqli_query($conn, "
+// ============ STUDENTS ============
+$students_res = mysqli_query($conn,"
     SELECT u.id, u.name
     FROM enrollments e
     JOIN users u ON u.id = e.student_id
@@ -41,237 +43,221 @@ $students = mysqli_query($conn, "
     ORDER BY u.name ASC
 ");
 
-// =====================================================
-// COUNT UNIQUE ATTENDANCE DAYS (IMPORTANT FIX)
-// =====================================================
-$total_days = mysqli_num_rows(mysqli_query($conn, "
-    SELECT DISTINCT attendance_date 
+// ============ ATTENDANCE ============
+$attendance = [];
+$q = mysqli_query($conn,"
+    SELECT student_id, lesson_id, attendance_date, status
     FROM attendance
     WHERE course_id = $course_id
-"));
+    ORDER BY attendance_date ASC
+");
 
-// If no attendance exists yet, fallback to lesson count
-if ($total_days == 0) {
-    $total_days = mysqli_num_rows(mysqli_query($conn,"
-        SELECT id FROM lessons WHERE course_id = $course_id
-    "));
+while ($r = mysqli_fetch_assoc($q)) {
+    $attendance[$r["student_id"]][$r["lesson_id"]][] = $r;
 }
 
-$logo_url = "http://localhost/training_center/assets/certificate/logo.png";
-$generated_date = date("F j, Y, g:i A");
+// ============ FIX IMAGE PATHS ============
+function safePath($file) {
+    $real = realpath($file);
+    if (!$real) return "";
+    return "file:///" . str_replace("\\", "/", $real);
+}
 
+$logoURL      = "http://localhost/training_center/assets/certificate/logo.png";
+$signatureURL = "http://localhost/training_center/assets/certificate/signature.png";
+
+// ============ START HTML OUTPUT ============
 ob_start();
 ?>
 
 <html>
 <head>
 <style>
-body { font-family: Arial, sans-serif; }
+body { font-family: Arial, sans-serif; font-size: 13px; }
 
-.logo { text-align:center; margin-bottom:20px; }
+.logo { text-align:center; margin-bottom:10px; }
 .logo img { width:180px; }
 
-h1 { text-align:center; margin-top:0; }
-
-.section-title {
-    background:#1a2338;
-    color:white;
-    padding:8px 12px;
-    font-weight:bold;
-    margin-top:25px;
-    border-radius:5px;
+.student-header {
+    background: #e8efff;
+    padding: 8px;
+    border-left: 5px solid #255ad3;
+    font-size: 16px;
+    margin-top: 25px;
 }
 
-.student-box {
-    border:1px solid #ccc;
-    padding:15px;
-    margin-top:15px;
-    border-radius:8px;
+.lesson-title {
+    font-size: 14px;
+    font-weight: bold;
+    margin-top: 12px;
+    margin-bottom: 6px;
 }
 
 .table {
-    width:100%;
-    border-collapse:collapse;
-    margin-top:10px;
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 6px;
 }
-
 .table th {
-    background:#f2f2f2;
-    padding:8px;
-    border:1px solid #ccc;
+    background: #1a2338;
+    color: white;
+    padding: 6px;
+    font-size: 12px;
 }
-
 .table td {
-    padding:8px;
-    border:1px solid #ccc;
+    border: 1px solid #ccc;
+    padding: 5px;
+    text-align: center;
+    font-size: 12px;
 }
 
 .summary-box {
-    margin-top:30px;
+    border:1px solid #444;
     padding:15px;
-    border:2px solid #000;
-    border-radius:8px;
+    width:70%;
+    margin-left:auto;
+    margin-right:auto;
+    text-align:center;
+    border-radius:6px;
 }
 
-.summary-title {
-    font-size:20px;
-    font-weight:bold;
-    margin-bottom:10px;
-}
+.page-break { page-break-after: always; }
 
-.page-break {
-    page-break-before: always;
+.summary-center {
+    margin-top: 200px; /* pushes summary down to center of page */
+    text-align:center;
 }
-
-.summary-page {
-    height: 90vh;            /* almost full page */
-    display: flex;
-    justify-content: center; /* horizontal center */
-    align-items: center;     /* vertical center */
-    flex-direction: column;
-}
-
-.logo img {
-    width: 260px;            /* Bigger logo */
-}
-
 </style>
 </head>
 
 <body>
 
 <div class="logo">
-    <img src="<?= $logo_url ?>">
+<?php if ($logoURL): ?>
+    <img src="<?= $logoURL ?>">
+<?php else: ?>
+    <h1>Training Center</h1>
+<?php endif; ?>
 </div>
 
-<h1><?= $course_title ?> — Attendance Report (Admin)</h1>
-
-<p><strong>Trainer:</strong> <?= $trainer_name ?></p>
-<p><strong>Total Attendance Days:</strong> <?= $total_days ?></p>
-
+<h2 style="text-align:center;"><?= htmlspecialchars($course_title) ?> — Attendance Report</h2>
+<p><strong>Trainer:</strong> <?= htmlspecialchars($trainer_name) ?></p>
 <hr>
 
 <?php
-// Summary counters
-$overall_students = 0;
-$overall_percent_total = 0;
+// ============ PER-STUDENT SECTIONS ============
+$total_students = 0;
+$class_percent_sum = 0;
 
-// =====================================================
-// LOOP THROUGH STUDENTS
-// =====================================================
-while ($stu = mysqli_fetch_assoc($students)) {
+mysqli_data_seek($students_res, 0);
 
-    $student_id = $stu['id'];
-    $student_name = $stu['name'];
+$student_index = 0;
+$total_students_count = mysqli_num_rows($students_res);
 
-    // =====================================================
-    // FETCH UNIQUE ATTENDANCE DAYS WITH LATEST STATUS
-    // =====================================================
-    $results = mysqli_query($conn, "
-        SELECT DISTINCT attendance_date,
-            (
-                SELECT status FROM attendance 
-                WHERE attendance_date = A.attendance_date
-                AND student_id = $student_id
-                AND course_id = $course_id
-                ORDER BY marked_at DESC
-                LIMIT 1
-            ) AS final_status
-        FROM attendance A
-        WHERE A.course_id = $course_id
-        ORDER BY attendance_date ASC
-    ");
+while ($stu = mysqli_fetch_assoc($students_res)):
 
-    $present = $late = $excused = $absent = 0;
-    $count_days = 0;
+    $sid  = $stu["id"];
+    $name = $stu["name"];
 
-    while ($row = mysqli_fetch_assoc($results)) {
+    echo "<div class='student-header'>Student: <strong>$name</strong></div>";
 
-        $count_days++;
-        $status = $row['final_status'];
+    $present = $late = $absent = $excused = 0;
+    $total_days = 0;
 
-        if ($status == "present") $present++;
-        elseif ($status == "late") $late++;
-        elseif ($status == "excused") $excused++;
-        else $absent++;
-    }
+    mysqli_data_seek($lessons_res, 0);
 
-    // Weighted calculation
-    $earned = ($present * 1) + ($late * 0.5) + ($excused * 1);
+    while ($lesson = mysqli_fetch_assoc($lessons_res)):
+        $lesson_id    = $lesson["id"];
+        $lesson_title = $lesson["title"];
 
-    $attendance_percentage = ($count_days > 0)
-        ? round(($earned / $count_days) * 100)
-        : 0;
+        echo "<div class='lesson-title'>Lesson: $lesson_title</div>";
 
-    // Add to overall summary
-    $overall_students++;
-    $overall_percent_total += $attendance_percentage;
+        echo "<table class='table'>
+                <tr><th>Date</th><th>Status</th></tr>";
+
+        if (!empty($attendance[$sid][$lesson_id])) {
+            foreach ($attendance[$sid][$lesson_id] as $rec) {
+                $date   = date("M j", strtotime($rec["attendance_date"]));
+                $status = ucfirst($rec["status"]);
+
+                echo "<tr><td>$date</td><td>$status</td></tr>";
+
+                if ($rec["status"] === "present")  $present++;
+                if ($rec["status"] === "absent")   $absent++;
+                if ($rec["status"] === "late")     $late++;
+                if ($rec["status"] === "excused")  $excused++;
+
+                $total_days++;
+            }
+        } else {
+            echo "<tr><td colspan='2'>No attendance recorded</td></tr>";
+        }
+
+        echo "</table>";
+
+    endwhile;
+
+    // Calculate % for one student
+    $earned = $present + $excused + ($late * 0.5);
+    $percent = $total_days > 0 ? round(($earned / $total_days) * 100) : 0;
+
+    $class_percent_sum += $percent;
+    $total_students++;
+
+    echo "
+    <div class='summary-box'>
+        <strong>Final Attendance % for $name: $percent%</strong>
+    </div>";
+
+$student_index++;
+
+if ($student_index < $total_students_count) {
+    // Add a page break ONLY between students — NOT after the last one
+    echo '<div class="page-break"></div>';
+}
+
+endwhile;
+
+// ============ FINAL COURSE SUMMARY ============
+$avg_class = $total_students > 0 ? round($class_percent_sum / $total_students) : 0;
 ?>
 
-<div class="student-box">
-    <div class="section-title">Student: <?= $student_name ?></div>
-
-    <table class="table">
-        <tr><th>Status</th><th>Count</th></tr>
-        <tr><td>Present</td><td><?= $present ?></td></tr>
-        <tr><td>Absent</td><td><?= $absent ?></td></tr>
-        <tr><td>Late</td><td><?= $late ?></td></tr>
-        <tr><td>Excused</td><td><?= $excused ?></td></tr>
-        <tr><th>Attendance %</th><th><?= $attendance_percentage ?>%</th></tr>
-    </table>
-</div>
-
-<?php } ?>
-
-<?php
-// Course summary
-$overall_avg = ($overall_students > 0)
-    ? round($overall_percent_total / $overall_students)
-    : 0;
-?>
 <div class="page-break"></div>
 
-<div class="summary-page">
-<br><br><br><br><br><br><br><br>
-<br><br><br><br><br><br><br><br>
-
+<div class="summary-center">
     <div class="summary-box">
-         <?php  
-            $logo = "http://localhost/training_center/assets/icons/info.svg";
-        ?>
-        <img src="<?php echo $logo; ?>" class="info-icon">
-        <div class="summary-title">Course Summary</div>
-        <p><strong>Total Students:</strong> <?= $overall_students ?></p>
-        <p><strong>Average Attendance:</strong> <?= $overall_avg ?>%</p>
-    </div>
+        <h2>Course Summary</h2>
+        <p><strong>Total Students:</strong> <?= $total_students ?></p>
+        <p><strong>Average Class Attendance:</strong> <?= $avg_class ?>%</p>
 
+        <br>
+        <?php if ($signatureURL): ?>
+            <img src="<?= $signatureURL ?>" width="150">
+        <?php endif; ?>
+    </div>
 </div>
-
-    <?php
-        $signature_url = "http://localhost/training_center/assets/certificate/signature.png";
-        $thedate = date("F j, Y, g:i A")
-    ?>
-
-    <div>
-        <img src="<?php echo $signature_url; ?>" style="width:350px;">
-        <em>Report generated on <?= $generated_date ?></em>
-    </div>
 
 </body>
 </html>
 
 <?php
-// Render PDF
 $html = ob_get_clean();
 
 $options = new Options();
-$options->set('isRemoteEnabled', true);
+$options->set("isRemoteEnabled", true);
+$options->set("isHtml5ParserEnabled", true);
 
+// *** IMPORTANT FIX: Enable CHROOT to allow images ***
+$options->setChroot(realpath(__DIR__ . "/../"));
+
+// render
 $dompdf = new Dompdf($options);
 $dompdf->loadHtml($html);
 $dompdf->setPaper("A4", "portrait");
 $dompdf->render();
 
+// prevent corruption
+ob_end_clean();
+
 $dompdf->stream("attendance-report-admin.pdf", ["Attachment" => true]);
 exit;
-?>

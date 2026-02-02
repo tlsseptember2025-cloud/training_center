@@ -6,6 +6,7 @@ include "../config/database.php";
 date_default_timezone_set('Asia/Dubai'); // ensure correct time
 
 $trainer_id = $_SESSION['user_id'];
+$lesson_id = $_GET['lesson_id'];
 
 // Fetch attendance records for this trainer
 $query = "
@@ -14,6 +15,7 @@ $query = "
         a.status,
         a.attendance_date,
         a.marked_at,
+        a.lesson_id,
         u.name AS student_name,
         l.title AS lesson_title,
         c.title AS course_title
@@ -21,7 +23,7 @@ $query = "
     JOIN users u ON u.id = a.student_id
     JOIN lessons l ON l.id = a.lesson_id
     JOIN courses c ON c.id = l.course_id
-    WHERE a.trainer_id = $trainer_id
+    WHERE a.lesson_id = $lesson_id
     ORDER BY a.marked_at DESC
 ";
 

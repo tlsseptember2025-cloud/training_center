@@ -2,6 +2,8 @@
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
+require_once __DIR__ . "/auth.php";
+requireRole('trainer'); 
 
 $trainerName = $_SESSION['user_name'] ?? "Trainer";
 $current = basename($_SERVER['PHP_SELF']);
@@ -79,7 +81,7 @@ $current = basename($_SERVER['PHP_SELF']);
            class="<?= $current === 'dashboard.php' ? 'active' : '' ?>">
            Dashboard
         </a>
-        <a href="attendance_stats.php" class="btn btn-primary btn-sm">Attendance Stats</a>
+       
     </div>
 
     <!-- RIGHT SIDE (Logout) -->
@@ -90,3 +92,49 @@ $current = basename($_SERVER['PHP_SELF']);
 </div>
 
 <div class="container">
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+
+    let timeoutSeconds = <?= $_SESSION["TIMEOUT_SECONDS"] ?? 900 ?>;
+    let warningTime = timeoutSeconds - 30; // 30 seconds before logout
+
+    let lastActivity = Date.now();
+
+    // Reset timer on mouse/keyboard/touch
+    ["mousemove", "keypress", "click", "scroll"].forEach(evt => {
+        document.addEventListener(evt, () => lastActivity = Date.now());
+    });
+
+    function checkIdle() {
+        let inactiveSeconds = (Date.now() - lastActivity) / 1000;
+
+        // Show warning popup
+        if (inactiveSeconds >= warningTime && inactiveSeconds < timeoutSeconds) {
+            if (!document.getElementById("idleWarning")) {
+                let warn = document.createElement("div");
+                warn.id = "idleWarning";
+                warn.style.position = "fixed";
+                warn.style.bottom = "20px";
+                warn.style.right = "20px";
+                warn.style.padding = "15px";
+                warn.style.background = "rgba(0,0,0,0.8)";
+                warn.style.color = "white";
+                warn.style.borderRadius = "8px";
+                warn.style.fontSize = "14px";
+                warn.style.zIndex = "99999";
+                warn.innerHTML = "⏳ You will be logged out in <b>30 seconds</b> due to inactivity.";
+                document.body.appendChild(warn);
+            }
+        }
+
+        // Auto logout
+        if (inactiveSeconds >= timeoutSeconds) {
+            window.location.href = "/training_center/login.php?timeout=1";
+        }
+    }
+
+    setInterval(checkIdle, 1000);
+});
+</script>
+
