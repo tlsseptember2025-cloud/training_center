@@ -65,18 +65,34 @@ $current = basename($_SERVER['PHP_SELF']);
 
     <div class="user-label">
         🎓 <?= $_SESSION['user_name'] ?> <span style="opacity:0.8;">(Student)</span>
+    
+        <a href="/training_center/student/dashboard.php"
+        class="<?= $current === 'dashboard.php' ? 'active' : '' ?>">Dashboard</a>
+
+        <a href="/training_center/student/profile.php"
+        class="<?= $current === 'profile.php' ? 'active' : '' ?>">Profile</a>
+
+        <a href="/training_center/student/change_password.php"
+        class="<?= $current === 'change_password.php' ? 'active' : '' ?>">Change Password</a>
+
+        <a href="/training_center/student/change_email.php"
+        class="<?= $current === 'change_email.php' ? 'active' : '' ?>">Change Email</a>
+
+        <a href="/training_center/student/courses.php"
+        class="<?= $current === 'courses.php' ? 'active' : '' ?>">My Courses</a>
+
+        <a href="/training_center/student/my_certificates.php"
+        class="<?= $current === 'my_certificates.php' ? 'active' : '' ?>">My Certificates</a>
     </div>
 
-    <a href="/training_center/student/dashboard.php"
-       class="<?= $current === 'dashboard.php' ? 'active' : '' ?>">Dashboard</a>
-
-    <a href="/training_center/student/courses.php"
-       class="<?= $current === 'courses.php' ? 'active' : '' ?>">My Courses</a>
-
-    <a href="/training_center/student/my_certificates.php"
-       class="<?= $current === 'my_certificates.php' ? 'active' : '' ?>">My Certificates</a>
-
+    <?php
+        $photo = $_SESSION["profile_photo"] ?? "default.png";
+        $photoURL = "/training_center/uploads/profile_photos/" . $photo;
+        ?>
+        <img src="<?= $photoURL ?>" 
+            style="width:32px;height:32px;border-radius:50%;margin-right:8px;object-fit:cover;">
     <a href="/training_center/logout.php">Logout</a>
+    
 </div>
 
 <div class="container">
