@@ -104,7 +104,10 @@ $profilePhoto = !empty($_SESSION['photo'])
 
     <!-- LEFT SIDE (Trainer name + menu) -->
     <div class="nav-left">
-        <div class="logo">👨‍🏫 <?= htmlspecialchars($trainerName) ?></div>
+        <div class="logo">
+            <a href="change_email.php" class="btn btn-primary" title="Change Password!">
+            👨‍🏫 <?= htmlspecialchars($trainerName) ?></a>
+        </div>
 
         <a href="/training_center/trainer/dashboard.php"
            class="<?= $current === 'dashboard.php' ? 'active' : '' ?>">
@@ -114,11 +117,6 @@ $profilePhoto = !empty($_SESSION['photo'])
         <a href="/training_center/trainer/profile.php"
    class="<?= $current === 'profile.php' ? 'active' : '' ?>">
    Profile
-</a>
-
-<a href="/training_center/trainer/change_password.php"
-   class="<?= $current === 'change_password.php' ? 'active' : '' ?>">
-   Change Password
 </a>
 
 <a href="/training_center/trainer/change_email.php"

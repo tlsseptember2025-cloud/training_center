@@ -22,7 +22,10 @@ $trainer = mysqli_fetch_assoc(mysqli_query($conn, "
 
         <h3><?= htmlspecialchars($trainer['name']) ?></h3>
 
-        <p><strong>Email:</strong> <?= $trainer['email'] ?></p>
+        <p>
+            <strong>Email:</strong> <?= $trainer['email'] ?> 
+            <a href="change_email.php" class="btn btn-primary">Change Email Here</a>
+        </p>
         <p><strong>Phone:</strong> <?= $trainer['phone'] ?: '—' ?></p>
         <p><strong>Address:</strong> <?= $trainer['address'] ?: '—' ?></p>
         <p><strong>Bio:</strong><br><?= nl2br($trainer['bio']) ?: '—' ?></p>
