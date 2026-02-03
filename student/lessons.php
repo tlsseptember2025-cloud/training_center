@@ -192,6 +192,9 @@ mysqli_data_seek($lessons, 0);
             style="margin-top: 15px; display: inline-block;"
             target="_blank">📄 Download Attendance Report
         </a>
+        <a href="my_certificates.php" class="btn btn-primary">
+                        View Certificates
+        </a>
     </p>
     
     <p>Your lessons for this course</p>
@@ -202,7 +205,6 @@ mysqli_data_seek($lessons, 0);
             <th>Resources/Files</th>
             <th>Status</th>
             <th>Mark Completed</th>
-            <th>Action</th>
         </tr>
 
         <?php while ($lesson = mysqli_fetch_assoc($lessons)): ?>
@@ -235,16 +237,6 @@ mysqli_data_seek($lessons, 0);
                     <a class="btn btn-success" 
                        href="complete_lesson.php?lesson_id=<?= $lesson['id'] ?>&course_id=<?= $course_id ?>">
                        Mark Completed
-                    </a>
-                <?php else: ?>
-                    —
-                <?php endif; ?>
-            </td>
-
-            <td>
-                <?php if ($percentage == 100): ?>
-                    <a href="my_certificates.php" class="btn btn-primary">
-                        View Certificates
                     </a>
                 <?php else: ?>
                     —

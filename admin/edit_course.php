@@ -1,5 +1,4 @@
 <?php
-include "../includes/admin_header.php";
 include "../includes/auth.php";
 requireRole('admin');
 include "../config/database.php";
@@ -26,6 +25,7 @@ if (isset($_POST['update_course'])) {
     header("Location: courses.php?updated=1");
     exit;
 }
+include "../includes/admin_header.php";
 ?>
 
 <link rel="stylesheet" href="/training_center/assets/css/forms.css">

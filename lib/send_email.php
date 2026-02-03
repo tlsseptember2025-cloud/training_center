@@ -2,9 +2,9 @@
 use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\Exception;
 
-require_once __DIR__ . '/PHPMailer/PHPMailer.php';
-require_once __DIR__ . '/PHPMailer/SMTP.php';
-require_once __DIR__ . '/PHPMailer/Exception.php';
+require_once __DIR__ . '/PHPMailer/src/PHPMailer.php';
+require_once __DIR__ . '//PHPMailer/src/SMTP.php';
+require_once __DIR__ . '/PHPMailer/src/Exception.php';
 
 
 function send_email($new_email, $subject, $body){
@@ -17,21 +17,18 @@ function send_email($new_email, $subject, $body){
         $mail2->Host       = 'smtp.gmail.com';  
         $mail2->SMTPAuth   = true;
         $mail2->Username   = 'ramiwahdan2023@gmail.com';
-        $mail2->Password   = 'alem bevx vcee jvir';  
+        $mail2->Password   = 'ovxf tfja ezpw ihps';  
         $mail2->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
         $mail2->Port       = 587;
 
         // Sender info
-        $mail2->setFrom('wahbib@gmail.com', 'Training Center');
+        $mail2->setFrom('ramiwahdan2023@gmail.com', 'Training Center');
         $mail2->addAddress($new_email, 'Admin');
 
         // Email content
         $mail2->isHTML(true);
-        $mail2->Subject = "Request to change your login email";
-
-        $mail2->Body = "
-            <?php $body?>
-        ";
+        $mail2->Subject = $subject;
+        $mail2->Body = $body;
 
         $mail2->send();
         return "SUCCESS";
@@ -39,7 +36,7 @@ function send_email($new_email, $subject, $body){
     } catch (Exception $e) {
         return "Email could not be sent. Error: {$mail2->ErrorInfo}";
     }
-} 
+}
 
 function sendCertificateEmail($toEmail, $toName, $courseName, $certificatePath) {
 
@@ -51,7 +48,7 @@ function sendCertificateEmail($toEmail, $toName, $courseName, $certificatePath) 
         $mail->Host       = 'smtp.gmail.com';  
         $mail->SMTPAuth   = true;
         $mail->Username   = 'ramiwahdan2023@gmail.com';
-        $mail->Password   = 'alem bevx vcee jvir';  
+        $mail->Password   = 'ovxf tfja ezpw ihps';  
         $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
         $mail->Port       = 587;
 

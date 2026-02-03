@@ -1,5 +1,5 @@
 <?php
-if (!isset($certID)) { return; } // Must be called from lessons.php
+if (!isset($certID)) { return; } // Must be called inside lessons.php
 
 require __DIR__ . "/dompdf/autoload.inc.php";
 require_once __DIR__ . "/PHPMailer/src/PHPMailer.php";
@@ -11,7 +11,7 @@ use Dompdf\Options;
 use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\Exception;
 
-// Fetch certificate + student email
+// Fetch certificate data
 $cert = mysqli_fetch_assoc(mysqli_query($conn, "
     SELECT c.*, u.email, u.name
     FROM certificates c
@@ -29,13 +29,30 @@ $certCode      = $cert['certificate_code'];
 $issued_at     = date("F j, Y", strtotime($cert['issued_at']));
 $expires_at    = date("F j, Y", strtotime($cert['expires_at']));
 
-// Paths
+// Save directory
+$saveDir = __DIR__ . "/../certificates";
+if (!is_dir($saveDir)) {
+    mkdir($saveDir, 0777, true);
+}
+
+$pdfFile = $saveDir . "/certificate-$certCode.pdf";
+
+// ❌ STOP DUPLICATE GENERATION
+if (file_exists($pdfFile)) {
+    return;
+}
+
+// Fix output buffer BEFORE PDF creation
+if (ob_get_length()) { ob_end_clean(); }
+
+// CERTIFICATE TEMPLATE ASSETS
 $assetDir = realpath(__DIR__ . "/../assets/certificate");
 $template  = "$assetDir/template.png";
 $logo      = "$assetDir/logo.png";
 $signature = "$assetDir/signature.png";
 $stamp     = "$assetDir/stamp.png";
 
+// HTML DESIGN
 $html = "
 <html>
 <head>
@@ -83,15 +100,10 @@ $dompdf->loadHtml($html);
 $dompdf->setPaper("A4", "landscape");
 $dompdf->render();
 
-$pdfOutput = $dompdf->output();
+// SAVE PDF FILE
+file_put_contents($pdfFile, $dompdf->output());
 
-// Save file
-$savePath = realpath(__DIR__ . "/../certificates");
-$pdfFile = $savePath . "/certificate-$certCode.pdf";
-
-file_put_contents($pdfFile, $pdfOutput);
-
-// Email it
+// Send certificate email ONLY ONCE
 $mail = new PHPMailer(true);
 
 try {
@@ -107,12 +119,12 @@ try {
     $mail->addAddress($student_email, $student_name);
 
     $mail->Subject = "Your Certificate - $course_title";
-    $mail->Body    = "Congratulations $student_name! Your certificate is attached.";
+    $mail->Body = "Congratulations $student_name! Your certificate is attached.";
     $mail->addAttachment($pdfFile);
 
     $mail->send();
 } catch (Exception $e) {
-    // Do not interrupt website
+    // Do not interrupt the website
 }
 
 ?>
