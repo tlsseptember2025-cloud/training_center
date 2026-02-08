@@ -119,11 +119,8 @@ $profilePhoto = !empty($_SESSION['photo'])
    Profile
 </a>
 
-<a href="/training_center/trainer/change_email.php"
-   class="<?= $current === 'change_email.php' ? 'active' : '' ?>">
-   Change Email
-</a>
-
+<a href="/training_center/trainer/change_password.php"
+        class="<?= $current === 'change_password.php' ? 'active' : '' ?>">Change Password</a>
 
     </div>
 

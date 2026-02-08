@@ -75,9 +75,6 @@ $current = basename($_SERVER['PHP_SELF']);
         <a href="/training_center/student/change_password.php"
         class="<?= $current === 'change_password.php' ? 'active' : '' ?>">Change Password</a>
 
-        <a href="/training_center/student/change_email.php"
-        class="<?= $current === 'change_email.php' ? 'active' : '' ?>">Change Email</a>
-
         <a href="/training_center/student/courses.php"
         class="<?= $current === 'courses.php' ? 'active' : '' ?>">My Courses</a>
 
