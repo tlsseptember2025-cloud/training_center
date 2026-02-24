@@ -1,9 +1,10 @@
 <?php
-$host = "sql12.freesqldatabase.com";
-$user = "sql12815441";
-$pass = "2UcKilyg6D";
-$db   = "sql12815441";
-$port = 3306; // <-- IMPORTANT
+
+$host = 'localhost';   // ← safer than 127.0.0.1 in XAMPP
+$db   = 'training_center';
+$user = 'root';
+$pass = 'Fatima2020';   // ← exactly what you tested
+$port = 3307;                   // ← match my.ini
 
 $conn = mysqli_connect($host, $user, $pass, $db, $port);
 
